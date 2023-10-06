@@ -4,11 +4,11 @@ Bringing you, your books, and others together | Proyek Tengah Semester
 
 ## Anggota Kelompok
 
-Wahyu Hidayat - [@wahyuhiddayat](https://www.github.com/wahyuhiddayat)
-Muhammad Milian Alkindi - [@mmalkindi](https://www.github.com/mmalkindi)
-Evelyn Paramesti Hotmauli Silalahi - [@evelynphs](https://www.github.com/evelynphs)
-Rana Koesumastuti - [@facesofgoblin](https://www.github.com/facesofgoblin)
-Muhammad Syahrul Khaliq - [@Amertaaa](https://www.github.com/Amertaaa)
+Wahyu Hidayat - [@wahyuhiddayat](https://www.github.com/wahyuhiddayat)  
+Muhammad Milian Alkindi - [@mmalkindi](https://www.github.com/mmalkindi)  
+Evelyn Paramesti Hotmauli Silalahi - [@evelynphs](https://www.github.com/evelynphs)  
+Rana Koesumastuti - [@facesofgoblin](https://www.github.com/facesofgoblin)  
+Muhammad Syahrul Khaliq - [@Amertaaa](https://www.github.com/Amertaaa)  
 
 ## About our app
 
