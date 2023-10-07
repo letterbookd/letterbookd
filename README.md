@@ -1,24 +1,26 @@
 # letterbookd 📖
 
-Bringing you, your books, and readers together.
+*Bringing you, your books, and readers together.*
 
 ## Anggota Kelompok
 
-Wahyu Hidayat ([@wahyuhiddayat](https://www.github.com/wahyuhiddayat))  
-Muhammad Milian Alkindi ([@mmalkindi](https://www.github.com/mmalkindi))  
-Evelyn Paramesti Hotmauli Silalahi ([@evelynphs](https://www.github.com/evelynphs))  
-Rana Koesumastuti ([@facesofgoblin](https://www.github.com/facesofgoblin))  
-Muhammad Syahrul Khaliq ([@Amertaaa](https://www.github.com/Amertaaa))  
+> Wahyu Hidayat [**@wahyuhiddayat**](https://www.github.com/wahyuhiddayat)  
+> Muhammad Milian Alkindi [**@mmalkindi**](https://www.github.com/mmalkindi)  
+> Evelyn Paramesti Hotmauli Silalahi [**@evelynphs**](https://www.github.com/evelynphs)  
+> Rana Koesumastuti [**@facesofgoblin**](https://www.github.com/facesofgoblin)  
+> Muhammad Syahrul Khaliq [**@Amertaaa**](https://www.github.com/Amertaaa)  
 
-## About our app
+## Cerita aplikasi yang diajukan serta manfaatnya
 
-\[\[ TODO \]\]
+Letterbookd adalah aplikasi yang bertujuan untuk membawa pembaca dengan buku dan pembaca buku lainnya.
+Dengan menggunakan aplikasi ini, *user* dapat menyimpan buku ke *Library* personal mereka, memberikan ulasan
+untuk buku yang sudah mereka baca, dan juga melihat ulasan buku oleh pembaca lainnya.
 
 ## Daftar modul yang akan diimplementasikan
 
 1. User Private (Login, Register, User Settings)
-2. User Public (Profile page, Users list/searching, Information pages, Book Catalog Filtering)
-3. User's Library (Review) + Books Section (recent reviews, statistics)
+2. User Public (Profile, Users list/searching, Information pages, Book Catalog filtering)
+3. User's Library (Review) + Books Section (Rececnt reviews, statistics)
 4. User's Library 2 (Tracking, Favorite)
 5. Librarian Dataset Management (Add, Delete, Edit book catalogue data)
 
