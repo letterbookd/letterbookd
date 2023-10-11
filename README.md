@@ -6,17 +6,18 @@ Bringing you, your books, and readers together.
 
 ## Anggota Kelompok A09
 
-> Wahyu Hidayat [**@wahyuhiddayat**](https://www.github.com/wahyuhiddayat)  
-> Muhammad Milian Alkindi [**@mmalkindi**](https://www.github.com/mmalkindi)  
-> Evelyn Paramesti Hotmauli Silalahi [**@evelynphs**](https://www.github.com/evelynphs)  
-> Rana Koesumastuti [**@facesofgoblin**](https://www.github.com/facesofgoblin)  
-> Muhammad Syahrul Khaliq [**@Amertaaa**](https://www.github.com/Amertaaa)  
+> Wahyu Hidayat - `2206081894`  
+> Muhammad Milian Alkindi - `2206081856`  
+> Evelyn Paramesti Hotmauli Silalahi `2206031012`  
+> Rana Koesumastuti `2206083496`  
+> Muhammad Syahrul Khaliq `2206083092`  
 
 ## Cerita aplikasi yang diajukan serta manfaatnya
 
 ***Letterbookd*** adalah aplikasi yang bertujuan untuk menyatukan pembaca dengan buku dan pembaca buku lainnya.
-Dengan menggunakan aplikasi ini, pembaca dapat menyimpan buku ke *Library* personal mereka, memberikan ulasan
+Dengan menggunakan aplikasi ini, pembaca dapat menyimpan buku dari katalog ke *Library* personal mereka, memberikan ulasan
 untuk buku yang sudah dibaca, dan juga melihat ulasan buku oleh pembaca lainnya.
+Buku-buku yang ada di dalam *library* personal dapat diatur status *tracking*nya untuk memudahkan pengguna melacak status buku mereka.
 
 ## Daftar modul yang akan diimplementasikan
 
@@ -36,12 +37,12 @@ untuk buku yang sudah dibaca, dan juga melihat ulasan buku oleh pembaca lainnya.
    - `DELETE` Menghapus buku dari katalog **\[LIBRARIAN-ONLY\]**
    - `UPDATE` Mengedit data buku yang ada di katalog **\[LIBRARIAN-ONLY\]**
    - `READ` Mengembalikan buku dalam katalog sesuai filter dan sort
-4. Review
+4. Review: Handling seputar review buku oleh Reader
    - `CREATE` Menambahkan review dari Reader untuk suatu buku
    - `DELETE` Menghapus review suatu buku oleh Reader
    - `UPDATE` Mengedit review suatu buku oleh Reader, Mengupdate *overall* rating buku
    - `READ` Mengembalikan review buku sesuai filter dan sort
-5. Reader
+5. Reader: Handling seputar akun Reader
    - `UPDATE` Mengubah display name dan bio di profile page
    - `UPDATE` Mengubah settings/preferences Reader
    - `READ` Menampilkan halaman profile Reader
