@@ -21,28 +21,28 @@ Buku-buku yang ada di dalam *library* personal dapat diatur status *tracking*nya
 
 ## Daftar modul yang akan diimplementasikan
 
-1. Auth: Handling seputar akun pengguna
+1. Authenticate: Handling seputar akun pengguna `[developer: Muhammad Syahrul Khaliq]`
    - `CREATE` Membuat akun baru lewat Sign Up
    - `READ` Mengembalikan informasi akun
    - `UPDATE` Mengubah username dan password akun
    - `DELETE` Menghapus akun
-2. Library: Handling seputar *library* personal pengguna
+2. Library: Handling seputar *library* personal pengguna `[developer: Muhammad Milian Alkindi]`
    - `CREATE` Menambahkan buku ke *library* Reader
    - `DELETE` Mengeluarkan buku dari *library* Reader
    - `UPDATE` Mengubah status *tracking* buku dalam *library*
      - Status Tracking: `FINISHED`, `READING`, `ON HOLD`, `DROPPED`, `UNTRACKED`
    - `READ` Mengembalikan buku dalam *library* sesuai filter dan sort
-3. Catalog: Handling seputar katalog buku
+3. Catalog: Handling seputar katalog buku `[developer: Evelyn Paramesti Hotmauli Silalahi]`
    - `CREATE` Menambahkan buku ke katalog **\[LIBRARIAN-ONLY\]**
    - `DELETE` Menghapus buku dari katalog **\[LIBRARIAN-ONLY\]**
    - `UPDATE` Mengedit data buku yang ada di katalog **\[LIBRARIAN-ONLY\]**
    - `READ` Mengembalikan buku dalam katalog sesuai filter dan sort
-4. Review: Handling seputar review buku oleh Reader
+4. Review: Handling seputar review buku oleh Reader `[developer: Rana Koesumastuti]`
    - `CREATE` Menambahkan review dari Reader untuk suatu buku
    - `DELETE` Menghapus review suatu buku oleh Reader
    - `UPDATE` Mengedit review suatu buku oleh Reader, Mengupdate *overall* rating buku
    - `READ` Mengembalikan review buku sesuai filter dan sort
-5. Reader: Handling seputar akun Reader
+5. Reader: Handling seputar akun Reader `[developer: Wahyu Hidayat]`
    - `UPDATE` Mengubah display name dan bio di profile page
    - `UPDATE` Mengubah settings/preferences Reader
    - `READ` Menampilkan halaman profile Reader
