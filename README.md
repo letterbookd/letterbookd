@@ -52,11 +52,11 @@ Modul ini akan menghandle sign in dan sign up ke aplikasi.
 - `UPDATE` Mengedit review suatu buku oleh Reader, Mengupdate *overall* rating buku
 - `READ` Mengembalikan review buku sesuai filter dan sort
 
-## Forum `[developer: Muhammad Syahrul Khaliq]`
+### Forum `[developer: Muhammad Syahrul Khaliq]`
 
 - `CREATE` Membuat *post* baru di forum atau *reply* ke suatu *post*
 - `DELETE` Menghapus *post* atau *reply* milik sendiri
-- `UPDATE` Mengedit isi dari *post* atau *reply*
+- `UPDATE` Mengedit konten dari *post* atau *reply*
 - `READ` Menampilkan halaman utama forum dan *thread* suatu *post* dalam forum
 
 ### Reader `[developer: Wahyu Hidayat]`
