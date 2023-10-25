@@ -13,10 +13,4 @@ urlpatterns = [
     path('json/<int:id>/', show_json_by_id, name='show_json_by_id'),
     path('edit-book/<int:id>/', edit_book_ajax, name='edit_book_ajax'),
     path('delete-book/<int:id>/', delete_book_ajax, name='delete_book_ajax'),
-    # path('register/', register, name='register'),
-    # path('login/', login_user, name='login'),
-    # path('logout/', logout_user, name='logout'),
-    # #path('edit-item/<int:id>', edit_item, name='edit_item'),
-    # path('get-item/', get_item_json, name='get_item_json'),
-    # path('create-ajax/', add_item_ajax, name='add_item_ajax'),
 ]

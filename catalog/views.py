@@ -1,13 +1,10 @@
 from django.shortcuts import render
 
 from catalog.models import Book
-from django.http import HttpResponseRedirect
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect, HttpResponseNotFound
 from django.core import serializers
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
-
-# Create your views here.
 
 #nanti authenticate
 def show_books(request):
