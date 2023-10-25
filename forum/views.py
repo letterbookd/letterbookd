@@ -18,21 +18,21 @@ def create_thread(request):
     return
 
 def edit_thread(request, id):
-    # TODO: mengedit thread milik user tersebut
+    # TODO: mengedit thread milik Reader tersebut (ajax)
     return
 
 def delete_thread(request, id):
-    # TODO: menghapus thread milik user tersebut
+    # TODO: menghapus thread milik Reader tersebut (ajax)
     return
 
 def post_reply(request, post_id):
-    # TODO: baut ForumPost (reply) baru ke ForumPost dengan post_id
+    # TODO: baut ForumPost (reply) baru ke ForumPost dengan post_id (ajax)
     return
 
 def edit_reply(request, id):
-    # TODO: mengedit reply milik user tersebut
+    # TODO: mengedit reply milik Reader tersebut (ajax)
     return
 
 def delete_reply(request, id):
-    # TODO: menghapus reply milik user tersebut
+    # TODO: menghapus reply milik Reader tersebut (ajax)
     return
