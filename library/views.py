@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 
 from reader.models import Reader
 from library.models import Library
@@ -10,7 +10,8 @@ from django.urls import reverse
 # Create your views here.
 def show_library(request):
     # TODO render halaman library
-    return
+    context = {'page_title': "Library", 'display_name': get_object_or_404(Reader, user=request.user).display_name}
+    return render(request, './library.html', context)
 
 def get_library(request):
     # TODO mengembalikan json data library user

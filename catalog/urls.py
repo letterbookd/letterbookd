@@ -4,8 +4,8 @@ from catalog.views import get_book_json, add_book_ajax, show_librarian_catalog, 
 app_name = 'catalog'
 
 urlpatterns = [
+    path('', show_reader_catalog, name='show_reader_catalog'),
     path('librarian-catalog/', show_librarian_catalog, name='show_librarian_catalog'),
-    path('reader-catalog/', show_reader_catalog, name='show_reader_catalog'),
     path('book-detail/<int:id>', show_book_detail, name='show_book_detail'),
     path('add-book/', add_book_ajax, name='add_book_ajax'),
     path('get-book/', get_book_json, name='get_book_json'),

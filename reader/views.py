@@ -2,13 +2,14 @@ from django.http import HttpResponseNotFound, JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Reader
 from .forms import ReaderForm, ReaderPreferencesForm
+from django.contrib.auth.models import User
 from library.models import *
 from catalog.models import *
 from django.views.decorators.csrf import csrf_exempt
 
 # Menampilkan halaman profile Reader
-def show_profile(request, user_id):
-    reader = get_object_or_404(Reader, user__id=user_id)
+def show_profile(request, id):
+    reader = get_object_or_404(Reader, user__id=id)
     return render(request, 'profile.html', {'reader': reader, 'page_title': 'Profile'})
 
 # Mengembalikan halaman hasil searching Reader dengan display_name
