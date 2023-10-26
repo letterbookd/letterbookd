@@ -10,13 +10,34 @@ from django.views.decorators.csrf import csrf_exempt
 # Create your views here.
 
 #nanti authenticate
-def show_books(request):
+def show_librarian_catalog(request):
     books = Book.objects.all()
 
     context = {
         'books': books,
+        'page_title':'LibrarianCatalog',
     }
     return render(request, "librarian_catalog.html", context)
+
+def show_reader_catalog(request):
+    books = Book.objects.all()
+
+    context = {
+        'books': books,
+        'page_title':'ReaderCatalog',
+    }
+    return render(request, "reader_catalog.html", context)
+
+def show_book_detail(request,id):
+    book = Book.objects.get(pk=id)
+
+    context = {
+        'book': book,
+        'authors': book.authors.replace(";", ", "),
+        'page_title':'BookDetail',
+    }
+
+    return render(request, "book_detail.html", context)
 
 def get_book_json(request):
     book = Book.objects.all()
@@ -78,17 +99,9 @@ def delete_book_ajax(request, id):
         return HttpResponse(b"DELETED", status = 201)
     return HttpResponseNotFound()
 
-def show_xml(request):
-    data = Book.objects.all()
-    return HttpResponse(serializers.serialize("xml", data), content_type="application/xml")
-
 def show_json(request):
     data = Book.objects.all()
     return HttpResponse(serializers.serialize("json", data), content_type="application/json")
-
-def show_xml_by_id(request, id):
-    data = Book.objects.filter(pk=id)
-    return HttpResponse(serializers.serialize("xml", data), content_type="application/xml")
 
 def show_json_by_id(request, id):
     data = Book.objects.filter(pk=id)
