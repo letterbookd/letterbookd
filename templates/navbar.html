@@ -1,4 +1,5 @@
-<header>
+{% load static %}
+
 <nav class="navbar navbar-expand-md bg-primary-subtle shadow-sm sticky-top">
     <div class="container-fluid">
         <a class="navbar-brand text-primary-emphasis" href="{% url 'guest:landing_page' %}">letterbookd</a>
@@ -20,6 +21,11 @@
                 </li>
                 {% endif %}
             </ul>
+
+            <button class="btn align-middle" data-bs-theme-value="dark">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi mb-1" id="theme-icon" viewBox="0 0 16 16"></svg>
+            </button>
+
             <div>
                 {% if logged_in %}
                     <div class="btn-group">
@@ -51,12 +57,12 @@
                         </ul>
                     </div>
                 {% else %}
-                    <button class="btn" type="button">Sign in</button>
-                    <button class="btn btn-outline-primary" type="button">Sign up</button>
+                    <a class="btn" href="{% url 'guest:login' %}" role="button">Sign in</a>
+                    <a class="btn btn-outline-primary" href="{% url 'guest:register' %}" role="button">Sign up</a>
                 {% endif %}
             </div>
         </div>
-        
     </div>
 </nav>
-</header>
+
+<script type="text/javascript" src="{% static 'js/theme.js' %}"></script>

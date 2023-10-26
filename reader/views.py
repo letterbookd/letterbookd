@@ -93,6 +93,7 @@ def get_reader_data_by_user(request, user_id):
 
 from django.http import JsonResponse
 
+
 @csrf_exempt
 def update_reader_settings_ajax(request):
     if request.method == 'POST':

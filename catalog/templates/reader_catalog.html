@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<!----------------------------------------------------------------------------------------------------------->
+
+<div class="total-books" id="total-books">
+    <p>- {{books.count}} books in total -</p>
+</div>
+
+<div class="search-wrapper d-flex">
+    <label>Search: </label>
+    <input class="ms-1" type="text">
+</div>
+
+<div>
+    <label for="sort-books">Sort books by:</label>
+    <select name="sort-books-select" id="sort-books-select" onchange="refreshBookSorted()">
+        <option value="title">Title</option>
+        <option value="authors">Authors</option>
+        <option value="rating">Rating</option>
+        <option value="favorites_count">Favorites count</option>
+    </select>
+</div>
+
+<div>
+    <label for="display-books">Display:</label>
+    <select name="display-books-select" id="display-books-select" onchange="refreshBookSorted()">
+        <option value="grid">Grid</option>
+        <option value="list">List</option>
+    </select>
+</div>
+
+<div class="d-flex flex-wrap" id="book-container"></div>
+
+<script>
+    async function getBooks() {
+        return fetch("{% url 'catalog:get_book_json' %}").then((res) => res.json())
+    }
+
+    //--------------------------------------------------------------------------------------------
+
+    async function sortBooks(byKey){
+        let sortedBooks;
+
+        var books = await getBooks();
+
+        if(byKey == 'title'){
+            sortedBooks = books.sort(function(a,b){
+                    let x = a.fields.title.toLowerCase();
+                    let y = b.fields.title.toLowerCase();
+
+                    //compare title
+                    if(x>y){return 1;} 
+                    if(x<y){return -1;}
+                    return 0;
+                    });
+        }
+        else if(byKey == 'authors'){
+            sortedBooks = books.sort(function(a,b){
+                    let x = a.fields.authors.toLowerCase();
+                    let y = b.fields.authors.toLowerCase();
+
+                    //compare authors
+                    if(x>y){return 1;} 
+                    if(x<y){return -1;}
+                    return 0;
+                });
+            }
+        else if(byKey == 'rating'){
+            sortedBooks = books.sort(function(a,b){
+                return a.fields.overall_rating - b.fields.overall_rating;
+            });
+        }
+        else if(byKey == 'favorites_count'){
+            sortedBooks = books.sort(function(a,b){
+                return a.fields.favorites_count - b.fields.favorites_count;
+            });
+        }
+        
+        return sortedBooks;
+    }
+
+    async function refreshBookSorted(){
+        document.getElementById("book-container").innerHTML = ""
+        document.getElementById("total-books").innerHTML = ""
+
+        const sortBy = document.querySelector('#sort-books-select').value;
+        const displayBy = document.querySelector('#display-books-select').value;
+        const books = await sortBooks(sortBy);
+        const books_count = books.length;
+        let htmlString = ``
+
+        console.log(sortBy);
+        console.log(displayBy);
+
+        if(displayBy == 'grid'){
+            books.forEach((item) => {
+                let authors = item.fields.authors.replaceAll(";", ", ")
+    
+                htmlString += `\n<div class="m-5" style="width:150px ; height:300px ; text-align:center">
+                <div class="book" style="width:100% ; height:100%">
+                    <div onclick="show_book_detail(${item.pk})" class="book-content d-flex flex-column align-items-center justify-content-center" style="width:100% ; height:100% ; cursor:pointer">
+                        <div class="mb-3">
+                            <img id="thumbnail-${item.pk}" src="${item.fields.thumbnail}" style="height:200px ; width:auto"></img>
+                        </div>
+                        <div>
+                            <div id="title-${item.pk}"><p>${item.fields.title}</p></div>
+                        </div> 
+                    </div>
+                </div>
+                </div>`
+            })
+        }
+
+        else if(displayBy == 'list'){
+            books.forEach((item) => {
+                let authors = item.fields.authors.replaceAll(";", ", ")
+    
+                htmlString += `\n<div class="border border-3 m-1 p-3" style="width:100% ; height:100% ; text-align:left">
+                <div class="book" style="width:100% ; height:100%">
+                    <div onclick="show_book_detail(${item.pk})" class="book-content d-flex flex-column align-items-left justify-content-center" style="width:100% ; height:100% ; cursor:pointer"> 
+                        <div class="mb-0.5">
+                            <h5>${item.fields.title}</h5>
+                        </div>
+                        <div class="mb-1">
+                            <h6>${authors}</h6>
+                        </div>
+                    </div>
+                </div>
+                </div>`
+            })
+        }
+        
+        document.getElementById("book-container").innerHTML = htmlString
+        document.getElementById("total-books").innerHTML = `<p>- ${books_count} books in total -</p>`
+    }
+
+    refreshBookSorted();
+
+    function show_book_detail(id){
+        window.location.href = "{% url 'catalog:show_book_detail' '123' %}".replace('123', id)
+    }
+
+
+</script>
+
+{% endblock content %}
