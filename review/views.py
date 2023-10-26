@@ -8,24 +8,45 @@ from django.urls import reverse
 # Create your views here.
 def show_reviews(request, book_id):
     # TODO: render semua review dari buku
-    return
+    reviews = Review.objects.filter (book_id = book_id)
+    return render (request, 'main.html', {'reviews': reviews})
 
 def get_all_user_reviews(request):
     # TODO: mengembalikan json isinya semua review milik Reader
-    return
+    all_review = Review.objects.all()
+    return HttpResponse(serializers.serialize('json', all_review))
 
 def get_user_review(request, book_id):
     # TODO: mengembalikan json review Reader untuk suatu buku
-    return
+    certain_review = Review.objects.filter(id=book_id)
+    return HttpResponse(serializers.serialize('json', certain_review))
 
+@csrf_exempt
 def create_review(request, book_id):
     # TODO: bikin review baru (ajax)
-    return
+    if request.method == 'POST':
+        user = request.user
+        stars_rating = request.POST.get("stars_rating")
+        status_on_review = request.POST.get("status_on_review")
+        review_text = request.POST.get("review")
+
+        new_review = Review.objects.create(user=user, stars_rating=stars_rating, status_on_review=status_on_review, review_text=review_text, book_id=book_id)
+        new_review.save()
+        return JsonResponse(new_review, status=201)
+    return HttpResponseNotFound()
 
 def edit_review(request, review_id):
     # TODO: edit reviewnya (ajax)
-    return
+    if request.method == 'POST':
+        review = Review.objects.get(review_id) 
+        review.stars_rating = request.POST.get("stars_rating")
+        review.status_on_review = request.POST.get("status_on_review")
+        review.review_text = request.POST.get("review")
+        review.save()
+    return HttpResponse("Review berhasil diedit")
 
 def delete_review(request, review_id):
     # TODO: hapus reviewnya (ajax)
-    return  
+    review = Review.objects.get(id=review_id) 
+    review.delete()
+    return redirect('main:show_main')
