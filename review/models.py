@@ -1,6 +1,6 @@
 from django.db import models
-from reader.models import *
 from library.models import *
+from reader.models import *
 
 # TODO
 class Review(models.Model):
