@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+{% include "navbar.html" %}
+
+    <h1>Profil {{ reader.display_name }}</h1>
+    <p>Bio: {{ reader.bio }}</p>
+    <p>Display Name: {{ reader.display_name }}</p>
+    <p>Profile Picture ID: {{ reader.profile_picture }}</p>
+    
+    <h2>Preferences:</h2>
+    <p>Share Reviews: {{ reader.preferences.share_reviews }}</p>
+    <p>Share Library: {{ reader.preferences.share_library }}</p>
+
+
+{% endblock content %}

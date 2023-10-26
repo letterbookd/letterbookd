@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+{% include "navbar.html" %}
+
+<!-- Content -->
+<div class="content">
+
+    <div>
+        <h3 class="mt-4 ml-8 text-dark">{{ reader.display_name }}</h3>
+        <h3 class="mt-4 ml-8 text-dark">{{ reader.bio }}</h3>
+        
+    </div>
+
+    <div class="rounded p-4 bg-transparent" id="product_cards_container">
+        <button type="button" class="btn btn-primary mb-4" data-bs-toggle="modal" data-bs-target="#exampleModal">Edit User Profile</button>
+        <div class="row row-cols-1 row-cols-md-3 g-4" id="product_cards"></div>
+    </div>
+
+</div>
+
+
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">Edit User Profile</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="POST">
+                    {% csrf_token %}
+                    
+                    <h3>Profile Settings</h3>
+                
+                    <div class="mb-3">
+                        <label for="{{ reader_form.display_name.id_for_label }}" class="form-label">Display Name:</label>
+                        <input type="text" class="form-control" name="{{ reader_form.display_name.name }}" id="{{ reader_form.display_name.id_for_label }}" value="{{ reader_form.display_name.value|default:'' }}" placeholder="Display Name">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ reader_form.bio.id_for_label }}" class="form-label">Bio:</label>
+                        <textarea class="form-control" name="{{ reader_form.bio.name }}" id="{{ reader_form.bio.id_for_label }}" placeholder="Bio">{{ reader_form.bio.value|default:'' }}</textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ reader_form.profile_picture.id_for_label }}" class="form-label">Profile Picture (Enter ID):</label>
+                        <input type="number" class="form-control" name="{{ reader_form.profile_picture.name }}" id="{{ reader_form.profile_picture.id_for_label }}" value="{{ reader_form.profile_picture.value|default:'' }}">
+                    </div>
+                    
+                
+                    <div class="mb-3">
+                        <label for="{{ reader_form.personal_library.id_for_label }}" class="form-label">Personal Library:</label>
+                        {{ reader_form.personal_library }}
+                    </div>
+                    
+                    <h3>Preferences</h3>
+                    
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" name="{{ preferences_form.share_reviews.name }}" id="{{ preferences_form.share_reviews.id_for_label }}" {% if preferences_form.share_reviews.value %}checked{% endif %}>
+                        <label class="form-check-label" for="{{ preferences_form.share_reviews.id_for_label }}">Share Reviews</label>
+                    </div>
+                    
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" name="{{ preferences_form.share_library.name }}" id="{{ preferences_form.share_library.id_for_label }}" {% if preferences_form.share_library.value %}checked{% endif %}>
+                        <label class="form-check-label" for="{{ preferences_form.share_library.id_for_label }}">Share Library</label>
+                    </div>
+                
+                    <div class="d-grid">
+                        <input type="submit" class="btn btn-primary btn-lg" value="Update Settings">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="button_add" data-bs-dismiss="modal">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+    
+{% endblock content %}

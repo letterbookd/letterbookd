@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+{% include "navbar.html" %}
+
+<h1>Search Results</h1>
+
+{% if readers.count > 0 %}
+    <ul>
+    {% for reader in readers %}
+        <li>
+
+            <h2>{{ reader.display_name }}</h2>
+            <p>Bio: {{ reader.bio }}</p>
+            <p>{{ reader.profile_picture }}</p>
+
+            <!-- belum show personal_library, preferences -->
+
+        </li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No readers found with the name you searched for</p> <!-- nanti diganti -->
+{% endif %}
+
+{% endblock content %}
