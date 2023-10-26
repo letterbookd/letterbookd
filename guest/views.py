@@ -56,8 +56,10 @@ def user_register(request):
     context = {'page_title': "Sign up"}
     return render(request, 'register.html', context)
 
-
 def user_logout(request):
     logout(request)
     response = HttpResponseRedirect(reverse('guest:landing_page'))
     return response
+
+def error_404_view(request):
+    return render(request, '404.html', status=404, context={'page_title': 'Uh oh'})

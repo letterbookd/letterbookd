@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block content %}
-<div class="v-25">
+<div class="position-absolute top-50 start-50 translate-middle w-75 mh-25">
     <div class="mb-3 text-center fw-light fs-3">Sign in to letterbookd</div>
     <div class="login bg-body-secondary rounded border p-4 shadow-sm">
         <form method="POST" action="">
@@ -28,7 +28,7 @@
             </ul>
         {% endif %}     
             
-        <div class="text-center text-body-secondary">Don't have an account? <a href="{% url 'guest:register' %}" class="link-offset-2 link-underline link-underline-opacity-0">Sign up to letterbookd</a></div>
-    </div>    
+        <div class="text-center text-body-secondary">Don't have an account? <a href="{% url 'guest:register' %}" class="link-offset-2 link-underline link-underline-opacity-0">Let's make one</a></div>
+    </div>
 </div>
 {% endblock content %}

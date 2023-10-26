@@ -2,9 +2,9 @@
 {% load static %}
 
 {% block content %}
-<div class="v-25">
+<div class="position-absolute top-50 start-50 translate-middle w-75 mh-25">
     <div class="mb-3 text-center fw-light fs-3">Sign up and start connecting with our community</div>
-    <div class="login bg-body-secondary rounded border p-4 shadow-sm">
+    <div class="bg-body-secondary rounded border p-4 shadow-sm">
         <form method="POST" action="">
             {% csrf_token %}
             <div class="form-floating mb-3">

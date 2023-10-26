@@ -78,7 +78,7 @@ Forum diskusi untuk para pembaca
 
 ## Sumber dataset katalog buku
 
-[https://www.kaggle.com/datasets/jalota/books-dataset/data](https://www.kaggle.com/datasets/jalota/books-dataset/data)
+[https://www.kaggle.com/datasets/dylanjcastillo/7k-books-with-metadata](https://www.kaggle.com/datasets/dylanjcastillo/7k-books-with-metadata)
 
 ## Role atau peran pengguna beserta deskripsinya
 
