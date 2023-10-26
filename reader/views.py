@@ -65,13 +65,11 @@ def search_catalog(request):
     results = Book.objects.filter(title__icontains=query)
     return render(request, 'book_search_results.html', {'results': results})
 
-
 # Menampilkan hasil searching buku untuk suatu reader di library
 def search_library(request):
     query = request.GET.get('q')
     user_books = LibraryBook.objects.filter(user=request.user, book__title__icontains=query)
     return render(request, 'book_search_results.html', {'results': user_books})
-
 
 # Mengembalikan data akun Reader untuk digunakan dalam bentuk JSON
 def get_reader_data_by_user(request, user_id):
@@ -94,7 +92,7 @@ def get_reader_data_by_user(request, user_id):
 
 from django.http import JsonResponse
 
-
+# Update data reader dengan AJAX 
 @csrf_exempt
 def update_reader_settings_ajax(request):
     if request.method == 'POST':
@@ -103,18 +101,26 @@ def update_reader_settings_ajax(request):
 
         display_name = request.POST.get("display_name")
         bio = request.POST.get("bio")
+        profile_picture = request.POST.get("profile_picture")  
+        share_reviews = request.POST.get("share_reviews") == 'true'  
+        share_library = request.POST.get("share_library") == 'true' 
         
         try:
             reader = Reader.objects.get(user=request.user)
             
             reader.display_name = display_name
             reader.bio = bio
-            
+            reader.profile_picture = profile_picture
+            reader.share_reviews = share_reviews
+            reader.share_library = share_library
+
             reader.save()
 
             return JsonResponse({'status': 'success', 'message': 'Settings updated successfully'})
 
         except Reader.DoesNotExist:
             return JsonResponse({'status': 'error', 'message': 'Reader does not exist'}, status=404)
+        except Exception as e: 
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
     return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=400)
