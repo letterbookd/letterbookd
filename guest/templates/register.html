@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="v-25">
+    <div class="mb-3 text-center fw-light fs-3">Sign up and start connecting with our community</div>
+    <div class="login bg-body-secondary rounded border p-4 shadow-sm">
+        <form method="POST" action="">
+            {% csrf_token %}
+            <div class="form-floating mb-3">
+                <input type="text" class="form-control" id="newUsername" name="username" maxlength="150" autocapitalize="none" autocomplete="off" autofocus placeholder required>
+                <label for="newUsername">Username</label>
+            </div>
+            <div class="form-floating mb-3">
+                <input type="password" class="form-control" id="newPassword1" name="password1" autocomplete="new-password" placeholder required>
+                <label for="newPassword1">Password</label>
+            </div>
+            <div class="form-floating mb-3">
+                <input type="password" class="form-control" id="newPassword2" name="password2" autocomplete="off" placeholder required>
+                <label for="newPassword2">Confirm password</label>
+            </div>
+            <div class="d-grid gap-2 mx-auto mt-2 mb-3">
+                <button type="submit" class="login_btn btn btn-block btn-success bg-gradient">Create my account</button>
+            </div>
+        </form>
+    
+        {% if messages %}
+            <ul>
+                {% for message in messages %}
+                    <li>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+            
+        <div class="text-center text-body-secondary">Already have an account? <a href="{% url 'guest:login' %}" class="link-offset-2 link-underline link-underline-opacity-0">Sign in</a></div>
+    </div>    
+</div>
+{% endblock content %}
