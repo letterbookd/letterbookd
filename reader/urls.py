@@ -16,7 +16,8 @@ urlpatterns = [
     path('json/', show_json, name='show_json'),
     path('json/<int:id>/', show_json_by_id, name='show_json_by_id'),
     path('get-reader/', get_all_readers_json, name='get_all_readers_json'),
-    path('edit-profile-ajax/', edit_profile_ajax, name='edit_profile_ajax')
+    path('edit-profile-ajax/<int:id>/', edit_profile_ajax, name='edit_profile_ajax'),
+    path('search/', search_handler, name='search_handler'),
     
     
 ]

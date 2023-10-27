@@ -103,8 +103,9 @@
         document.getElementById("bio").value = bio.textContent;
 
         function editHandle(){
-            editProfile();
+            editProfile(userId);
         }
+
 
         document.getElementById("button_save").onclick = editHandle;
     }

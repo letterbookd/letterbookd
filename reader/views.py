@@ -86,3 +86,22 @@ def edit_profile_ajax(request, id):
         return HttpResponse(b"CREATED", status=201)
 
     return HttpResponseNotFound()
+
+def search_handler(request):
+    query = request.GET.get('q')
+    search_type = request.GET.get('search_type')
+
+    if search_type == "catalog":
+        results = Book.objects.filter(titleicontains=query)
+        return render(request, 'book_search_results.html', {'results': results})
+
+    elif search_type == "library":
+        user_books = LibraryBook.objects.filter(user=request.user, booktitleicontains=query)
+        return render(request, 'book_search_results.html', {'results': user_books})
+
+    elif search_type == "reader":
+        readers = Reader.objects.filter(display_nameicontains=query)
+        return render(request, 'user_search_results.html', {'readers': readers})
+
+    else:
+        return HttpResponse("Invalid search type.")
