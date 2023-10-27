@@ -57,8 +57,7 @@
     var book_id = document.getElementById("book-id").getAttribute("value")
     
     function showReviewsPage(){
-        var id = document.getElementById("book-id").getAttribute("value")
-        window.location.href = "{% url 'catalog:show_book_reviews' '123' %}".replace('123', id) //nanti ganti kalo reviews udh jadi
+        ;
     }
 
     //reload kalo teken back button di browser
@@ -82,58 +81,6 @@
     }
 
     handleFavoritesCount()
-
-    //============================================== temporary
-
-    async function getFavoriteData() {
-        return fetch("{% url 'catalog:get_book_in_user_library' '123'%}".replace('123', book_id)).then((res) => res.json())
-    }
-
-    async function favoriteButtonHandle(){
-        const book = await getFavoriteData()
-        const favoriteButton = document.getElementById("favorite-button")
-
-        if(book.length != 0){
-            favoriteButton.disabled = true
-        }
-    }
-
-    favoriteButtonHandle()
-
-    //--------------------------------------------
-
-    async function getFavoritedBooks(){
-        return fetch("{% url 'catalog:get_favorited_books' %}").then((res) => res.json())
-    }
-
-    async function printFavBooks(){
-        const books = await getFavoritedBooks()
-
-        books.forEach((item) => {
-            console.log(item.fields.book)
-        })
-    }
-
-    printFavBooks()
-
-    async function addFavorite() {
-        let url = "{% url 'catalog:add_to_favorite' '123'%}".replace('123', book_id);
-        const response = await fetch(url, {
-            method: "POST",
-        });
-    }
-
-    document.getElementById("favorite-button").onclick = addFavorite
-
-    async function deleteFavorites() {
-        let url = "{% url 'catalog:delete_favorites' %}";
-        const response = await fetch(url, {
-            method: "DELETE",
-        });
-    }
-
-    document.getElementById("temporary-delete-button").onclick = deleteFavorites
-
 
 </script>
 
