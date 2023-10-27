@@ -8,9 +8,13 @@ from django.http import HttpResponse, HttpResponseRedirect, HttpResponseNotFound
 from django.core import serializers
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import get_object_or_404
 
-#nanti authenticate
+@login_required(login_url='/login')
 def show_librarian_catalog(request):
+    get_object_or_404(Librarian, user=request.user) #authenticate librarian
+
     books = Book.objects.all()
 
     context = {
@@ -20,6 +24,8 @@ def show_librarian_catalog(request):
     return render(request, "librarian_catalog.html", context)
 
 def show_reader_catalog(request):
+    get_object_or_404(Reader, user=request.user) #authenticate reader
+
     books = Book.objects.all()
 
     context = {
@@ -29,6 +35,8 @@ def show_reader_catalog(request):
     return render(request, "reader_catalog.html", context)
 
 def show_book_detail(request,id):
+    get_object_or_404(Reader, user=request.user) #authenticate reader
+    
     book = Book.objects.get(pk=id)
 
     context = {
