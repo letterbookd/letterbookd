@@ -12,5 +12,4 @@ urlpatterns = [
     path('reply/<int:id>', post_reply, name='post_reply'),
     path('edit_reply/<int:id>', edit_reply, name='edit_reply'),
     path('delete_reply/<int:id>', delete_reply, name='delete_reply'),
-
 ]

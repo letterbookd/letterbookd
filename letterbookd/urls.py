@@ -25,5 +25,4 @@ urlpatterns = [
     path('forum/', include('forum.urls')),
     path('review/', include('review.urls')),
     path('reader/', include('reader.urls')),
-
 ]
