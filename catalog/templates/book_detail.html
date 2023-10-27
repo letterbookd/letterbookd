@@ -3,6 +3,7 @@
 {% block content %}
 
 <!----------------------------------------------------------------------------------------------------------->
+<div id="book-id" value="{{ book.pk }}"></div>
 
 <div class="border border-3 p-3">
     <div class="d-flex">
@@ -10,8 +11,11 @@
             <img src="{{ book.thumbnail }}" style="width:auto ; height:250px"></img>
         </div>
         <div class="ms-3">
-            <div class="mb-1">
+            <div class="mb-1 d-flex">
                 <h2>{{ book.title }}</h2>
+                <button id="favorite-button" class="btn btn-warning ms-3">Add To Favorite</button>
+                <button id="personal-library-button" class="btn btn-warning ms-3">Add To Personal Library</button>
+                <button id="temporary-delete-button">Delete Favorites (temp)</button>
             </div>
             <div class="mb-1">
                 <h4>{{ authors }}</h4>
@@ -32,7 +36,7 @@
                 <label>Overall rating: {{ book.overall_rating }}/5</label>
             </div>
             <div class="mb-1">
-                <label>{{ book.favorites_count }} people added this book to their favorite.</label>
+                <label id="favorite-count">{{ book.favorites_count }} people added this book to their favorite.</label>
             </div>
         </div>
     </div>
@@ -45,12 +49,92 @@
     <hr>
 
     <div>
-        <h3>Reviews</h3>
-        <button class="btn btn-primary">Add Review</button>
+        <button class="btn btn-primary" onclick="showReviewsPage()">See reviews</button>
     </div>
 </div>
 
 <script>
+    var book_id = document.getElementById("book-id").getAttribute("value")
+    
+    function showReviewsPage(){
+        var id = document.getElementById("book-id").getAttribute("value")
+        window.location.href = "{% url 'catalog:show_book_reviews' '123' %}".replace('123', id) //nanti ganti kalo reviews udh jadi
+    }
+
+    //reload kalo teken back button di browser
+    //credit: https://stackoverflow.com/questions/43043113/how-to-force-reloading-a-page-when-using-browser-back-button
+    window.addEventListener("pageshow", function(event) {
+        var historyTraversal = event.persisted || ( typeof window.performance != "undefined" && window.performance.navigation.type === 2 );
+        if ( historyTraversal ) {
+            window.location.reload();
+        }
+    });
+
+    async function getFavoritedLibraryBooks(){
+        return fetch("{% url 'catalog:get_favorited_library_book' '123'%}".replace('123', book_id)).then((res) => res.json())
+    }
+
+    async function handleFavoritesCount(){
+        const favoritedLibraryBooks = await getFavoritedLibraryBooks()
+
+        var favoritesCount = favoritedLibraryBooks.length
+        document.getElementById("favorite-count").innerHTML = `${favoritesCount} people added this book to their favorite.`
+    }
+
+    handleFavoritesCount()
+
+    //============================================== temporary
+
+    async function getFavoriteData() {
+        return fetch("{% url 'catalog:get_book_in_user_library' '123'%}".replace('123', book_id)).then((res) => res.json())
+    }
+
+    async function favoriteButtonHandle(){
+        const book = await getFavoriteData()
+        const favoriteButton = document.getElementById("favorite-button")
+
+        if(book.length != 0){
+            favoriteButton.disabled = true
+        }
+    }
+
+    favoriteButtonHandle()
+
+    //--------------------------------------------
+
+    async function getFavoritedBooks(){
+        return fetch("{% url 'catalog:get_favorited_books' %}").then((res) => res.json())
+    }
+
+    async function printFavBooks(){
+        const books = await getFavoritedBooks()
+
+        books.forEach((item) => {
+            console.log(item.fields.book)
+        })
+    }
+
+    printFavBooks()
+
+    async function addFavorite() {
+        let url = "{% url 'catalog:add_to_favorite' '123'%}".replace('123', book_id);
+        const response = await fetch(url, {
+            method: "POST",
+        });
+    }
+
+    document.getElementById("favorite-button").onclick = addFavorite
+
+    async function deleteFavorites() {
+        let url = "{% url 'catalog:delete_favorites' %}";
+        const response = await fetch(url, {
+            method: "DELETE",
+        });
+    }
+
+    document.getElementById("temporary-delete-button").onclick = deleteFavorites
+
+
 </script>
 
 {% endblock content %}

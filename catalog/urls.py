@@ -1,5 +1,5 @@
 from django.urls import path
-from catalog.views import get_book_json, add_book_ajax, show_librarian_catalog, show_reader_catalog, show_book_detail,show_json, show_json_by_id, edit_book_ajax, delete_book_ajax
+from catalog.views import *
 
 app_name = 'catalog'
 
@@ -13,4 +13,16 @@ urlpatterns = [
     path('json/<int:id>/', show_json_by_id, name='show_json_by_id'),
     path('edit-book/<int:id>/', edit_book_ajax, name='edit_book_ajax'),
     path('delete-book/<int:id>/', delete_book_ajax, name='delete_book_ajax'),
+    path('get-favorited-library-book/<int:id>', get_favorited_library_book, name='get_favorited_library_book'),
+
+    #temporary urls ==============================================================================================
+    path('reviews/<int:id>/', show_book_reviews, name='show_book_reviews'),
+    path('get-reviews/<int:id>/', get_reviews_json, name='get_reviews_json'),
+    path('add-review/<int:id>/', add_review, name='add_review'),
+    path('delete-review/<int:id>/', delete_review, name='delete_review'),
+
+    path('get-book-from-user-library/<int:id>/', get_book_in_user_library, name='get_book_in_user_library'),
+    path('get-favorited-books/', get_favorited_books, name='get_favorited_books'),
+    path('add-to-favorite/<int:id>', add_to_favorite, name='add_to_favorite'),
+    path('delete-favorites/', delete_favorites, name='delete_favorites'),
 ]
