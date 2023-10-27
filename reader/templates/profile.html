@@ -1,12 +1,145 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <h1>Profil {{ reader.display_name }}</h1>
-    <p>Bio: {{ reader.bio }}</p>
-    <p>Display Name: {{ reader.display_name }}</p>
-    <p>Profile Picture ID: {{ reader.profile_picture }}</p>
-    
-    <h2>Preferences:</h2>
-    <p>Share Reviews: {{ reader.preferences.share_reviews }}</p>
-    <p>Share Library: {{ reader.preferences.share_library }}</p>
+
+<style>
+    .custom-profile-picture {
+        width: 250px;
+        height: 250px;
+    }
+
+    .custom-col {
+        height: 300px; 
+    }
+
+
+</style>
+
+<!-- Content -->
+<h1>Profile</h1>
+<div class="content">
+    <div class="row">
+
+        <div class="col d-flex justify-content-center align-items-center custom-col">
+            <img src="/static/images/pfp_0.jpg" alt="profile picture" class="custom-profile-picture">
+        </div>
+        
+        <div class="col">
+            <p><b>Display Name:</b></p>
+            <p id="display_name">{{ reader.display_name }}</p>
+
+            <p><b>Bio:</b></p>
+            <p id="bio">{{ reader.bio }}</p>
+
+            <p><b>Share Reviews:</b></p>
+            <p>{{ reader.preferences.share_reviews|yesno:"Sharing Reviews,Not Sharing Reviews" }}</p>
+
+            <p><b>Share Library:</b></p>
+            <p>{{ reader.preferences.share_library|yesno:"Sharing Library,Not Sharing Library" }}</p>
+
+            <div class="rounded p-4 bg-transparent" id="product_cards_container">
+                <button type="button" class="btn btn-primary mb-4" data-bs-toggle="modal" data-bs-target="#edit-profile-modal">Edit Profile</button>
+                <div class="row row-cols-1 row-cols-md-3 g-4" id="product_cards"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Edit Profile -->
+<div class="modal fade" id="edit-profile-modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="modal-title-label">Edit Profile</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" id="form" onsubmit="return false;">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="display_name" class="col-form-label">Display Name:</label>
+                        <input type="text" class="form-control" id="display_name" name="display_name" placeholder="Display Name"></input>
+                    </div>
+                    <div class="mb-3">
+                        <label for="bio" class="col-form-label">Bio:</label>
+                        <textarea class="form-control" id="bio" name="bio" placeholder="Bio: "></textarea>
+                    </div>
+                    <h3>Preferences</h3>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" name="inputShareReviewPreference" id="inputShareReviewPreference" {% if preferences_form.share_reviews.value %}checked{% endif %}>
+                        <label class="form-check-label" for="inputShareReviewPreference">Share Reviews</label>
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" name="inputShareLibraryPreference" id="inputShareLibraryPreference" {% if preferences_form.share_library.value %}checked{% endif %}>
+                        <label class="form-check-label" for="inputShareLibraryPreference">Share Library</label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id ="button_close" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="button_save" data-bs-dismiss="modal">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="user-data" data-user-id="{{ request.user.id }}"></div>
+
+<script>
+
+    const userDataElement = document.getElementById("user-data");
+    const userId = userDataElement.getAttribute("data-user-id");
+
+
+    async function getReaders() {
+        return fetch("{% url 'reader:get_all_readers_json' %}").then((res) => res.json())
+    }
+
+    function editReaderModal(){
+        const display_name = document.getElementById(`display_name`);
+        const bio = document.getElementById(`bio`);
+
+        document.getElementById("display_name").value = display_name.textContent;
+        document.getElementById("bio").value = bio.textContent;
+
+        function editHandle(){
+            editProfile();
+        }
+
+        document.getElementById("button_save").onclick = editHandle;
+    }
+
+
+    async function editProfile(id){
+        let url = "{% url 'reader:edit_profile_ajax' '123' %}".replace('123', id);
+
+        const response = await fetch(url, {
+            method: "POST",
+            body: new FormData(document.querySelector('#form'))
+        });
+
+        if(response.ok){
+            refreshProfile();
+        }
+    }
+
+    async function refreshProfile(id){
+        // Fetch the updated profile details
+        const readerDetailUrl = "{% url 'reader:show_json_by_id' id=request.user.id %}"; 
+        const response = await fetch(readerDetailUrl);
+        const updatedReaderData = await response.json();
+        const updatedReader = updatedReaderData[0].fields; 
+
+        if (updatedReader) {
+            document.querySelector("p#display_name").textContent = updatedReader.display_name;
+            document.querySelector("p#bio").textContent = updatedReader.bio;
+        }
+    }
+
+    refreshProfile();
+
+    document.querySelector('[data-bs-target="#edit-profile-modal"]').addEventListener('click', editReaderModal);
+
+</script>
+
 {% endblock content %}
