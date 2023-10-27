@@ -5,7 +5,8 @@
     <h1>Hello, {{ display_name }}!</h1>
     <p class="lead">Welcome back to your personal library</p>
 
-    <div class="d-inline-flex flex-row gap-2 w-auto align-items-center justify-content-sm-center">
+    <hr>
+    <div class="d-flex flex-row flex-wrap gap-2 w-auto align-items-center justify-content-center">
         <button type="button" id="sort-direction-toggle" class="btn btn-sm" aria-label="Sort direction option" data-sort-direction=1>
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-sort-down" viewBox="0 0 16 16">
                 <path d="M3.5 2.5a.5.5 0 0 0-1 0v8.793l-1.146-1.147a.5.5 0 0 0-.708.708l2 1.999.007.007a.497.497 0 0 0 .7-.006l2-2a.5.5 0 0 0-.707-.708L3.5 11.293V2.5zm3.5 1a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zM7.5 6a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1h-5zm0 3a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1h-3zm0 3a.5.5 0 0 0 0 1h1a.5.5 0 0 0 0-1h-1z"/>
@@ -28,6 +29,18 @@
             </select>
             <label for="filter-selection">Filter</label>
         </div>
+        <div class="btn-group" role="group">
+            <button id="display-grid-toggle" type="button" class="btn btn-outline-primary active">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-grid-3x2" viewBox="0 0 16 16">
+                    <path d="M0 3.5A1.5 1.5 0 0 1 1.5 2h13A1.5 1.5 0 0 1 16 3.5v8a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 0 11.5v-8zM1.5 3a.5.5 0 0 0-.5.5V7h4V3H1.5zM5 8H1v3.5a.5.5 0 0 0 .5.5H5V8zm1 0v4h4V8H6zm4-1V3H6v4h4zm1 1v4h3.5a.5.5 0 0 0 .5-.5V8h-4zm0-1h4V3.5a.5.5 0 0 0-.5-.5H11v4z"/>
+                </svg>
+            </button>
+            <button id="display-list-toggle" type="button" class="btn btn-outline-primary">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-list" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z"/>
+                </svg>
+            </button>
+        </div>
         <button type="button" id="refresh-library" class="btn btn-sm" aria-label="Refresh library button">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-clockwise" viewBox="0 0 16 16">
                 <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/>
@@ -35,8 +48,7 @@
               </svg>
         </button>
     </div>
-
-    <div id="library-books" class="row row-cols-2 row-cols-lg-6 row-cols-md-6 row-cols-sm-4 m-4"></div>
+    <div id="library-books" class="row row-cols-2 row-cols-lg-6 row-cols-md-6 row-cols-sm-4 g-col-6 m-4"></div>
 
     <!-- MODAL -->
 
@@ -51,7 +63,7 @@
 
     var sortOption = 'alphabetical'
     var filterOption = 'all'
-    var sortDirection
+    var layoutOption = 'grid'
     var cachedLibrary = null;
     var sortedCachedLibrary = null;
     async function getLibrary() {
@@ -88,8 +100,8 @@
                 let y = b["library_data"].tracking_status;
 
                 //compare title
-                if(x>y){return sortDirection*1;} 
-                if(x<y){return sortDirection*-1;}
+                if(x<y){return sortDirection*1;} 
+                if(x>y){return sortDirection*-1;}
                 return 0;
             });
         }
@@ -121,17 +133,60 @@
             const library_data = library_item["library_data"];
             console.log(book_data)
             counter++;
-            htmlString += 
-            `<div class="col">
-                <div class="book-card p-0 d-flex flex-column justify-content-center m-0 gap-2">
-                    <img src=${book_data.thumbnail} class="rounded">
-                    <span class="text-center fst-italic">${book_data.title}</span>
+            if (layoutOption == 'grid') {
+                htmlString += 
+                `<div class="g-col">
+                    <div class="book-card p-0 d-flex flex-column justify-content-center m-0 gap-2">
+                        <img src=${book_data.thumbnail} class="rounded border border-1 shadow-sm">
+                        <span class="text-center fst-italic">${book_data.title}</span>
+                    </div>
                 </div>
-            </div>
-            \n`
+                \n`
+            } else if (layoutOption == 'list') {
+                htmlString += 
+                `<div class="g-row">
+                    <div class="card mb-3 shadow-sm">
+                        <div class="row g-0">
+                            <div class="col-1 col-lg-2">
+                                <img src=${book_data.thumbnail} class="h-auto img-fluid rounded-start" alt="...">
+                            </div>
+                            <div class="col-11 col-lg-10">
+                                <div class="card-body">
+                                    <h5 class="card-title">${book_data.title}</h5>
+                                    <p class="card-text">by ${book_data.authors}</p>
+                                    <hr>
+                                    <div class="d-flex flex-row-reverse gap-2">
+                                        <button type="button" class="btn btn-outline-danger">
+                                            🗑️
+                                        </button>
+                                        <button type="button" class="btn btn-outline-warning">
+                                            ⭐
+                                        </button>
+                                        <button type="button" class="btn btn-outline-success">
+                                            🟢
+                                        </button>
+                                        <button type="button" class="btn btn-outline-info">
+                                            🗣️
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                \n`
+            }
         })
 
-        document.getElementById("library-books").innerHTML = htmlString
+        const library_div = document.getElementById("library-books")
+        library_div.className = ""
+        if (layoutOption == 'grid') {
+            library_div.classList.add("row", "row-cols-2", "row-cols-lg-6", "row-cols-md-6", "row-cols-sm-4", "m-4", "justify-content-center", "row-gap-3")
+        } else {
+            library_div.classList.add("col", "row-cols-lg-2", "row-cols-sm-1", "m-4")
+        }
+        
+        library_div.innerHTML = htmlString
         console.log('counter: ' + counter)
     }
 
@@ -231,6 +286,54 @@
         redrawLibrary()
         updateSortDirectionIcon(sortDirectionToggle.getAttribute('data-sort-direction'));
     })
+
+    // bind list/grid display toggle
+    let listToggle = document.getElementById('display-list-toggle')
+    listToggle.addEventListener('click', async () => {
+        if (layoutOption != 'list') {
+            layoutOption = 'list'
+            redrawLibrary();
+            updateGridToggleIcon();
+            updateListToggleIcon();
+        }
+    })
+    let gridToggle = document.getElementById('display-grid-toggle')
+    gridToggle.addEventListener('click', async () => {
+        if (layoutOption != 'grid') {
+            layoutOption = 'grid'
+            redrawLibrary()
+            updateGridToggleIcon();
+            updateListToggleIcon();
+        }
+    })
+
+    function updateGridToggleIcon() {
+        let svg = ``;
+        if (layoutOption == 'grid') {
+            gridToggle.classList.add("active");
+            svg = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-grid-3x2-gap-fill" viewBox="0 0 16 16">
+                <path d="M1 4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V4zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1V4zM1 9a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V9zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V9zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1V9z"/>
+            </svg>
+            `;
+        } else {
+            gridToggle.classList.remove("active");
+            svg = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-grid-3x2" viewBox="0 0 16 16">
+                <path d="M0 3.5A1.5 1.5 0 0 1 1.5 2h13A1.5 1.5 0 0 1 16 3.5v8a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 0 11.5v-8zM1.5 3a.5.5 0 0 0-.5.5V7h4V3H1.5zM5 8H1v3.5a.5.5 0 0 0 .5.5H5V8zm1 0v4h4V8H6zm4-1V3H6v4h4zm1 1v4h3.5a.5.5 0 0 0 .5-.5V8h-4zm0-1h4V3.5a.5.5 0 0 0-.5-.5H11v4z"/>
+            </svg>
+            `;
+        }
+        gridToggle.innerHTML = svg;
+    }
+    function updateListToggleIcon() {
+        if (layoutOption == 'list') {
+            listToggle.classList.add("active");
+        } else {
+            listToggle.classList.remove("active");
+        }
+    }
+    updateGridToggleIcon();
 
     // refresh library button
     document.getElementById('refresh-library').addEventListener('click', refreshLibrary)    
