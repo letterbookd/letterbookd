@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <h1>{{ edit_mode ? "Edit Review for " : "Create a Review for " }}{{ book_title }}</h1>
+
+
+  <!-- Form untuk input review -->
+  <form id="review-form">
+    {% csrf_token %}
+    <label for="review">Write your review:</label>
+    <textarea name="review" rows="4" cols="50" required></textarea>
+
+    <label for="stars_rating">Rating:</label>
+    <input type="number" step="0.5" name="stars_rating" min="0" max="5" required>
+
+    <label for="status_on_review">Status:</label>
+    <p>{{ library.status_tracking }}</p>    
+
+    <button type="submit">Submit Review</button>
+  </form>
+  
+  <form id="review-form">
+    {% csrf_token %}
+    <label for="review">Write your review:</label>
+    <textarea name="review" rows="4" cols="50" required>{{ review.review_text }}</textarea>
+
+    <label for="stars_rating">Rating:</label>
+    <input type="number" step="0.5" name="stars_rating" min="0" max="5" required value="{{ review.stars_rating }}">
+
+    <label for="status_on_review">Status:</label>
+    <select name="status_on_review" required>
+        <option value="FINISHED" {% if review.status_on_review == "FINISHED" %}selected{% endif %}>FINISHED</option>
+        <option value="READING" {% if review.status_on_review == "READING" %}selected{% endif %}>READING</option>
+        <option value="ON HOLD" {% if review.status_on_review == "ON HOLD" %}selected{% endif %}>ON HOLD</option>
+        <option value="PLANNED" {% if review.status_on_review == "PLANNED" %}selected{% endif %}>PLANNED</option>
+        <option value="DROPPED" {% if review.status_on_review == "DROPPED" %}selected{% endif %}>DROPPED</option>
+        <option value="UNTRACKED" {% if review.status_on_review == "UNTRACKED" %}selected{% endif %}>UNTRACKED</option>
+    </select>
+
+    <button type="submit">{{ edit_mode ? "Edit Review" : "Submit Review" }}</button>
+  </form>
+
+  <script>
+    // Fungsi untuk mengambil dan mengisi dropdown status_on_review
+    $.ajax({
+    url: "{% url 'review:create_review' %}",
+    method: 'POST',
+    data: {
+        review: $("textarea[name='review_text']").val(),
+        stars_rating: $("input[name='stars_rating']").val(),
+        status_on_review: library.status_tracking
+    },
+    success: function(response) {
+        // Tutup form setelah berhasil mengirim review
+        $("#review-form").hide();
+
+        // Tampilkan pesan sukses atau lakukan tindakan lain sesuai kebutuhan
+        alert("Review berhasil dibuat!");
+
+        // Kemudian, Anda dapat memperbarui daftar ulasan atau melakukan tindakan lain yang diperlukan
+        updateReviewList();
+    },
+    error: function(error) {
+        // Handle kesalahan, tampilkan pesan kesalahan jika perlu
+        alert("Terjadi kesalahan saat membuat review.");
+    }
+    });
+
+    $("#review-form").submit(function(e) {
+        e.preventDefault();
+        $.ajax({
+            url: "{% url 'review:edit_review' %}", // Ganti dengan URL yang sesuai
+            method: 'POST',
+            data: {
+                review_text: $("textarea[name='review']").val(),
+                stars_rating: $("input[name='stars_rating']").val(),
+                status_on_review: $("select[name='status_on_review']").val()
+            },
+            success: function(response) {
+                // Tutup form setelah berhasil mengirim perubahan review
+                $("#review-form").hide();
+
+                // Tampilkan pesan sukses atau lakukan tindakan lain sesuai kebutuhan
+                alert("Review berhasil diedit!");
+
+                // Kemudian, Anda dapat memperbarui daftar ulasan atau melakukan tindakan lain yang diperlukan
+                updateReviewList();
+            },
+            error: function(error) {
+                // Handle kesalahan, tampilkan pesan kesalahan jika perlu
+                alert("Terjadi kesalahan saat mengedit review.");
+            }
+        });
+    });
+
+    $("#star-rating").rating({
+        'size':'xs',
+        'showClear': false,
+        'showCaption': false,
+        'step': 0.5
+    });
+
+
+  </script>
+  
+{% endblock %}
