@@ -2,14 +2,178 @@
 {% load static %}
 
 {% block content %}
-<h1>Hello, {{ display_name }}!</h1>
-<div id="">
+    <h1>Hello, {{ display_name }}!</h1>
+    <p class="lead">Welcome back to your personal library</p>
 
-</div>
+    <div class="d-inline-flex flex-row gap-2 w-auto align-items-center justify-content-sm-center">
+        <button type="button" id="sort-direction" class="btn btn-sm" aria-label="Sort direction option" data-sort-direction=0>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-sort-down" viewBox="0 0 16 16">
+                <path d="M3.5 2.5a.5.5 0 0 0-1 0v8.793l-1.146-1.147a.5.5 0 0 0-.708.708l2 1.999.007.007a.497.497 0 0 0 .7-.006l2-2a.5.5 0 0 0-.707-.708L3.5 11.293V2.5zm3.5 1a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zM7.5 6a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1h-5zm0 3a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1h-3zm0 3a.5.5 0 0 0 0 1h1a.5.5 0 0 0 0-1h-1z"/>
+            </svg>
+        </button>
+        <div class="form-floating pe-2 col-auto">
+            <select id="sort-selection" class="form-select form-select-sm" aria-label="Sort library option">
+                <option value="0" selected>Alphabetical</option>
+                <option value="1">Last Added</option>
+                <option value="2">Tracking Status</option>
+            </select>
+            <label for="sort-selection">Sort by</label>
+        </div>
+        <div class="form-floating pe-2">
+            <select id="filter-selection" class="form-select form-select-sm" aria-label="Filter library option">
+                <option value="0" selected>All</option>
+                <option value="1">Favorites</option>
+                <option value="2">Finished Reading</option>
+                <option value="3">Reviewed</option>
+            </select>
+            <label for="sort-selection">Filter</label>
+        </div>
+    </div>
+
+    <div id="library-books" class="row row-cols-2 row-cols-lg-6 row-cols-md-6 row-cols-sm-4 g-4 m-4">
+        {% for item in library %}
+        <div class="card">
+            <div class="card-body">
+                <img src={{item.book.thumbnail}} class="card-img-top" alt="{{item.book.title}} cover">
+              <h5 class="card-title">{{item.book.title}}</h5>
+            </div>
+            <div class="card-footer">
+                <div class="gap-2 d-flex justify-content-end">
+                    <button type="button" class="btn btn-outline-warning edit-item-button" data-bs-toggle="modal" data-bs-target="#editModal">
+                        Change Status
+                    </button>
+                    <button type="button" class="btn btn-outline-warning edit-item-button" data-bs-toggle="modal" data-bs-target="#editModal">
+                        Favorite
+                    </button>
+                    <button type="button" class="btn btn-outline-warning edit-item-button" data-bs-toggle="modal" data-bs-target="#editModal">
+                        Review
+                    </button>
+                    <button type="button" class="btn btn-outline-danger delete-item-button" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                        Remove
+                    </button>
+                </div>
+            </div>
+          </div>
+        {% endfor %}
+    </div>
+
+    <!-- MODAL -->
+
 {% endblock content %}
 
 {% block scripts %}
 <script>
-    document.getElementById("hahah").innerHTML = "<p>apa tuh</p>"
+    const url_get_library = "{% url 'library:get_library' %}";
+    const url_get_library_book = "{% url 'library:get_book_in_library' id=12345 %}";
+    const url_add_book = "{% url 'library:add_book' id=12345 %}";
+    const url_remove_book = "{% url 'library:remove_book' id=12345 %}";
+    const url_favorite_book = "{% url 'library:favorite_book' id=12345 %}";
+
+    async function getLibrary() {
+        return fetch(url_get_library).then((res) => res.json())
+    }
+
+    async function sortLibrary(sortBy) {
+        let sortedJson;
+        var library = await getLibrary();
+        return sortedJson
+    }
+
+    async function getLibraryBook(id) {
+        const get_url = url_get_library_book.replace(/12345/, id.toString());
+        return fetch(get_url).then((res) => res.json())
+    }
+
+    async function refreshLibraryItem(id) {
+        const lib_book = (await getLibrary(id))[0]
+
+        let htmlString = `
+        ...
+        \n`
+
+        // document.querySelector("[data-item-id='" + id + "'] .card-body").innerHTML = htmlString
+    }
+
+    async function refreshLibrary() {
+        const library_books = await getLibrary()
+        let htmlString = ``;
+        var counter = 0;
+        library_books.forEach((item) => {
+            counter++;
+            htmlString += 
+            `
+            ...
+            \n` 
+        })
+        document.getElementById("library-books").innerHTML = htmlString
+
+        // set event listeners for delete buttons
+        // const deleteButtons = document.getElementsByClassName("delete-item-button")
+        // for(var i = 0; i < deleteButtons.length; i++) {
+        //     (function(index) {
+        //         deleteButtons[index].addEventListener("click", function() {
+        //             setDeleteModalId(deleteButtons[index]);
+        //         })
+        //     })(i);
+        // }
+
+        // // set event listeners for edit buttons
+        // const editButtons = document.getElementsByClassName("edit-item-button")
+        // for(var i = 0; i < editButtons.length; i++) {
+        //     (function(index) {
+        //         editButtons[index].addEventListener("click", function() {
+        //             setEditModalId(editButtons[index]);
+        //         })
+        //     })(i);
+        // }
+
+        // // set event listeners for increment buttons
+        // const incrButtons = document.getElementsByClassName("increment-item-button")
+        // for(var i = 0; i < incrButtons.length; i++) {
+        //     (function(index) {
+        //         incrButtons[index].addEventListener("click", function() {
+        //             incrementItem(this.closest("div.card").dataset.itemId);
+        //         })
+        //     })(i);
+        // }
+
+        // // set event listeners for decrement buttons
+        // const decrButtons = document.getElementsByClassName("decrement-item-button")
+        // for(var i = 0; i < decrButtons.length; i++) {
+        //     (function(index) {
+        //         decrButtons[index].addEventListener("click", function() {
+        //             decrementItem(this.closest("div.card").dataset.itemId);
+        //         })
+        //     })(i);
+        // }
+    }
+    refreshLibrary()
+
+    function updateSortDirectionIcon(newDirection) {
+        let svg = ``;
+        if (newDirection == 0) {
+            svg = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-sort-down" viewBox="0 0 16 16">
+                <path d="M3.5 2.5a.5.5 0 0 0-1 0v8.793l-1.146-1.147a.5.5 0 0 0-.708.708l2 1.999.007.007a.497.497 0 0 0 .7-.006l2-2a.5.5 0 0 0-.707-.708L3.5 11.293V2.5zm3.5 1a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zM7.5 6a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1h-5zm0 3a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1h-3zm0 3a.5.5 0 0 0 0 1h1a.5.5 0 0 0 0-1h-1z"/>
+            </svg>
+            `;
+        } else {
+            svg = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-sort-up-alt" viewBox="0 0 16 16">
+                <path d="M3.5 13.5a.5.5 0 0 1-1 0V4.707L1.354 5.854a.5.5 0 1 1-.708-.708l2-1.999.007-.007a.498.498 0 0 1 .7.006l2 2a.5.5 0 1 1-.707.708L3.5 4.707V13.5zm4-9.5a.5.5 0 0 1 0-1h1a.5.5 0 0 1 0 1h-1zm0 3a.5.5 0 0 1 0-1h3a.5.5 0 0 1 0 1h-3zm0 3a.5.5 0 0 1 0-1h5a.5.5 0 0 1 0 1h-5zM7 12.5a.5.5 0 0 0 .5.5h7a.5.5 0 0 0 0-1h-7a.5.5 0 0 0-.5.5z"/>
+            </svg>
+            `;
+        }
+        document.getElementById("sort-direction").innerHTML = svg;
+    }
+    document.querySelectorAll('[data-sort-direction]').forEach(toggle => {
+        toggle.addEventListener('click', () => {
+            const lastDirection = toggle.getAttribute('data-sort-direction')
+            toggle.setAttribute("data-sort-direction", (lastDirection == 0 ? 1 : 0))
+            updateSortDirectionIcon(toggle.getAttribute('data-sort-direction'));
+        })
+    })
+
 </script>
+<!-- <script type="text/javascript" src="{% static '/library/js/library_handler.js' %}"></script> -->
 {% endblock scripts %}
