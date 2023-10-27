@@ -6,56 +6,37 @@
     <p class="lead">Welcome back to your personal library</p>
 
     <div class="d-inline-flex flex-row gap-2 w-auto align-items-center justify-content-sm-center">
-        <button type="button" id="sort-direction" class="btn btn-sm" aria-label="Sort direction option" data-sort-direction=0>
+        <button type="button" id="sort-direction-toggle" class="btn btn-sm" aria-label="Sort direction option" data-sort-direction=1>
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-sort-down" viewBox="0 0 16 16">
                 <path d="M3.5 2.5a.5.5 0 0 0-1 0v8.793l-1.146-1.147a.5.5 0 0 0-.708.708l2 1.999.007.007a.497.497 0 0 0 .7-.006l2-2a.5.5 0 0 0-.707-.708L3.5 11.293V2.5zm3.5 1a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zM7.5 6a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1h-5zm0 3a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1h-3zm0 3a.5.5 0 0 0 0 1h1a.5.5 0 0 0 0-1h-1z"/>
             </svg>
         </button>
         <div class="form-floating pe-2 col-auto">
-            <select id="sort-selection" class="form-select form-select-sm" aria-label="Sort library option">
-                <option value="0" selected>Alphabetical</option>
-                <option value="1">Last Added</option>
-                <option value="2">Tracking Status</option>
+            <select name="sort-selection" id="sort-selection" class="form-select form-select-sm" aria-label="Sort library option">
+                <option value="alphabetical" selected>Alphabetical</option>
+                <option value="recent">Recently Added</option>
+                <option value="tracking">Tracking Status</option>
             </select>
             <label for="sort-selection">Sort by</label>
         </div>
         <div class="form-floating pe-2">
-            <select id="filter-selection" class="form-select form-select-sm" aria-label="Filter library option">
-                <option value="0" selected>All</option>
-                <option value="1">Favorites</option>
-                <option value="2">Finished Reading</option>
-                <option value="3">Reviewed</option>
+            <select name="filter-selection" id="filter-selection" class="form-select form-select-sm" aria-label="Filter library option">
+                <option value="all" selected>All</option>
+                <option value="favorites">Favorites</option>
+                <option value="finished">Finished Reading</option>
+                <option value="reviewed">Reviewed</option>
             </select>
-            <label for="sort-selection">Filter</label>
+            <label for="filter-selection">Filter</label>
         </div>
+        <button type="button" id="refresh-library" class="btn btn-sm" aria-label="Refresh library button">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-clockwise" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/>
+                <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/>
+              </svg>
+        </button>
     </div>
 
-    <div id="library-books" class="row row-cols-2 row-cols-lg-6 row-cols-md-6 row-cols-sm-4 g-4 m-4">
-        {% for item in library %}
-        <div class="card">
-            <div class="card-body">
-                <img src={{item.book.thumbnail}} class="card-img-top" alt="{{item.book.title}} cover">
-              <h5 class="card-title">{{item.book.title}}</h5>
-            </div>
-            <div class="card-footer">
-                <div class="gap-2 d-flex justify-content-end">
-                    <button type="button" class="btn btn-outline-warning edit-item-button" data-bs-toggle="modal" data-bs-target="#editModal">
-                        Change Status
-                    </button>
-                    <button type="button" class="btn btn-outline-warning edit-item-button" data-bs-toggle="modal" data-bs-target="#editModal">
-                        Favorite
-                    </button>
-                    <button type="button" class="btn btn-outline-warning edit-item-button" data-bs-toggle="modal" data-bs-target="#editModal">
-                        Review
-                    </button>
-                    <button type="button" class="btn btn-outline-danger delete-item-button" data-bs-toggle="modal" data-bs-target="#deleteModal">
-                        Remove
-                    </button>
-                </div>
-            </div>
-          </div>
-        {% endfor %}
-    </div>
+    <div id="library-books" class="row row-cols-2 row-cols-lg-6 row-cols-md-6 row-cols-sm-4 m-4"></div>
 
     <!-- MODAL -->
 
@@ -64,26 +45,63 @@
 {% block scripts %}
 <script>
     const url_get_library = "{% url 'library:get_library' %}";
-    const url_get_library_book = "{% url 'library:get_book_in_library' id=12345 %}";
     const url_add_book = "{% url 'library:add_book' id=12345 %}";
     const url_remove_book = "{% url 'library:remove_book' id=12345 %}";
     const url_favorite_book = "{% url 'library:favorite_book' id=12345 %}";
 
+    var sortOption = 'alphabetical'
+    var filterOption = 'all'
+    var sortDirection
+    var cachedLibrary = null;
+    var sortedCachedLibrary = null;
     async function getLibrary() {
         return fetch(url_get_library).then((res) => res.json())
     }
 
-    async function sortLibrary(sortBy) {
-        let sortedJson;
-        var library = await getLibrary();
+    async function applySortAndFilters() {
+        let sortedJson = JSON.parse(JSON.stringify(cachedLibrary));
+        let sortDirection = sortDirectionToggle.getAttribute('data-sort-direction')
+        
+        if (sortOption === 'alphabetical') {
+            sortedJson = sortedJson.sort(function(a,b){
+                let x = a["book_data"].title.toLowerCase();
+                let y = b["book_data"].title.toLowerCase();
+
+                //compare title
+                if(x>y){return sortDirection*1;} 
+                if(x<y){return sortDirection*-1;}
+                return 0;
+            });
+        } else if (sortOption === 'recent') {
+            sortedJson = sortedJson.sort(function(a,b){
+                let x = a["library_data"].id;
+                let y = b["book_data"].id;
+
+                //compare title
+                if(x<y){return sortDirection*1;} 
+                if(x>y){return sortDirection*-1;}
+                return 0;
+            });
+        } else if (sortOption === 'tracking') {
+            sortedJson = sortedJson.sort(function(a,b){
+                let x = a["library_data"].tracking_status;
+                let y = b["library_data"].tracking_status;
+
+                //compare title
+                if(x>y){return sortDirection*1;} 
+                if(x<y){return sortDirection*-1;}
+                return 0;
+            });
+        }
+
+        // filtering...
+        if (filterOption === 'favorites') {
+            sortedJson = sortedJson.filter(obj => obj["library_data"].is_favorited == true);
+        } else if (filterOption === 'finished') {
+            sortedJson = sortedJson.filter(obj => obj["library_data"].tracking_status == 1);
+        }
         return sortedJson
     }
-
-    async function getLibraryBook(id) {
-        const get_url = url_get_library_book.replace(/12345/, id.toString());
-        return fetch(get_url).then((res) => res.json())
-    }
-
     async function refreshLibraryItem(id) {
         const lib_book = (await getLibrary(id))[0]
 
@@ -94,18 +112,38 @@
         // document.querySelector("[data-item-id='" + id + "'] .card-body").innerHTML = htmlString
     }
 
-    async function refreshLibrary() {
-        const library_books = await getLibrary()
+    async function redrawLibrary() {
         let htmlString = ``;
         var counter = 0;
-        library_books.forEach((item) => {
+        
+        sortedCachedLibrary.forEach((library_item) => {
+            const book_data = library_item["book_data"];
+            const library_data = library_item["library_data"];
+            console.log(book_data)
             counter++;
             htmlString += 
-            `
-            ...
-            \n` 
+            `<div class="col">
+                <div class="book-card p-0 d-flex flex-column justify-content-center m-0 gap-2">
+                    <img src=${book_data.thumbnail} class="rounded">
+                    <span class="text-center fst-italic">${book_data.title}</span>
+                </div>
+            </div>
+            \n`
         })
+
         document.getElementById("library-books").innerHTML = htmlString
+        console.log('counter: ' + counter)
+    }
+
+    async function connectListeners() {
+        
+    }
+
+    async function refreshLibrary() {
+        cachedLibrary = (await getLibrary())["library"];
+        sortedCachedLibrary = await applySortAndFilters();
+        await redrawLibrary();
+        await connectListeners();
 
         // set event listeners for delete buttons
         // const deleteButtons = document.getElementsByClassName("delete-item-button")
@@ -151,7 +189,7 @@
 
     function updateSortDirectionIcon(newDirection) {
         let svg = ``;
-        if (newDirection == 0) {
+        if (newDirection == 1) {
             svg = `
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-sort-down" viewBox="0 0 16 16">
                 <path d="M3.5 2.5a.5.5 0 0 0-1 0v8.793l-1.146-1.147a.5.5 0 0 0-.708.708l2 1.999.007.007a.497.497 0 0 0 .7-.006l2-2a.5.5 0 0 0-.707-.708L3.5 11.293V2.5zm3.5 1a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zM7.5 6a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1h-5zm0 3a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1h-3zm0 3a.5.5 0 0 0 0 1h1a.5.5 0 0 0 0-1h-1z"/>
@@ -164,16 +202,38 @@
             </svg>
             `;
         }
-        document.getElementById("sort-direction").innerHTML = svg;
+        document.getElementById("sort-direction-toggle").innerHTML = svg;
     }
-    document.querySelectorAll('[data-sort-direction]').forEach(toggle => {
-        toggle.addEventListener('click', () => {
-            const lastDirection = toggle.getAttribute('data-sort-direction')
-            toggle.setAttribute("data-sort-direction", (lastDirection == 0 ? 1 : 0))
-            updateSortDirectionIcon(toggle.getAttribute('data-sort-direction'));
-        })
+
+    // bind sort selection
+    let sortSelection = document.getElementById('sort-selection')
+    sortSelection.addEventListener('input', async () => {
+        sortOption = sortSelection.value
+        sortedCachedLibrary = await applySortAndFilters();
+        redrawLibrary()
+    });
+
+    // bind filter selection
+    let filterSelection = document.getElementById('filter-selection')
+    filterSelection.addEventListener('input', async () => {
+        filterOption = filterSelection.value
+        sortedCachedLibrary = await applySortAndFilters()
+        redrawLibrary()
+    });
+
+    // bind sort direction button
+    let sortDirectionToggle = document.getElementById('sort-direction-toggle')
+    sortDirectionToggle.addEventListener('click', async () => {
+        const lastDirection = sortDirectionToggle.getAttribute('data-sort-direction')
+        sortDirectionToggle.setAttribute("data-sort-direction", (lastDirection == 1 ? -1 : 1))
+
+        sortedCachedLibrary = await applySortAndFilters()
+        redrawLibrary()
+        updateSortDirectionIcon(sortDirectionToggle.getAttribute('data-sort-direction'));
     })
 
+    // refresh library button
+    document.getElementById('refresh-library').addEventListener('click', refreshLibrary)    
 </script>
 <!-- <script type="text/javascript" src="{% static '/library/js/library_handler.js' %}"></script> -->
 {% endblock scripts %}

@@ -3,7 +3,7 @@ from django.shortcuts import render, get_object_or_404
 from reader.models import Reader
 from library.models import Library, LibraryBook
 from catalog.models import Book
-from django.http import HttpResponse, HttpResponseRedirect, HttpResponseNotFound
+from django.http import HttpResponse, HttpResponseRedirect, HttpResponseNotFound, JsonResponse
 from django.core import serializers
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
@@ -12,12 +12,9 @@ from django.views.decorators.http import require_POST, require_GET
 # Create your views here.
 @login_required(login_url='/login')
 def show_library(request):
-    library = get_object_or_404(Library, reader__user=request.user).mybooks.all()
-
     context = {
         'page_title': "Library",
         'display_name': get_object_or_404(Reader, user=request.user).display_name,
-        'library': library,
     }
     return render(request, './library.html', context)
 
@@ -25,12 +22,19 @@ def show_library(request):
 def get_library(request):
     # TODO mengembalikan json data library user
     library_items = get_object_or_404(Library, reader__user=request.user).mybooks.all()
-    return HttpResponse(serializers.serialize('json', library_items))
+    book_items = Book.objects.filter(librarybook__in=library_items)
 
-@login_required(login_url='/login')
-def get_book_in_library(request, book_id):
-    lib_book = get_object_or_404(Library, reader__user=request.user).mybooks.get(book__pk=book_id)
-    return HttpResponse(serializers.serialize('json', lib_book))
+    library_items = list(library_items.values())
+    book_items = list(book_items.values())
+    library = []
+    for index in range(0, len(library_items)):
+        library.append(
+            {
+                "library_data": library_items[index],
+                "book_data": book_items[index],
+            }
+        )
+    return JsonResponse({"library" : library})
 
 @login_required(login_url='/login')
 @require_POST
