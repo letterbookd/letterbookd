@@ -14,7 +14,7 @@
 </div>
 
 <div>
-    <label for="sort-books">Sort books by:</label>
+    <label>Sort books by:</label>
     <select name="sort-books-select" id="sort-books-select" onchange="refreshBookSorted()">
         <option value="title">Title</option>
         <option value="authors">Authors</option>
@@ -24,7 +24,7 @@
 </div>
 
 <div>
-    <label for="display-books">Display:</label>
+    <label>Display:</label>
     <select name="display-books-select" id="display-books-select" onchange="refreshBookSorted()">
         <option value="grid">Grid</option>
         <option value="list">List</option>
@@ -91,9 +91,6 @@
         const books_count = books.length;
         let htmlString = ``
 
-        console.log(sortBy);
-        console.log(displayBy);
-
         if(displayBy == 'grid'){
             books.forEach((item) => {
                 let authors = item.fields.authors.replaceAll(";", ", ")
@@ -141,6 +138,15 @@
     function show_book_detail(id){
         window.location.href = "{% url 'catalog:show_book_detail' '123' %}".replace('123', id)
     }
+
+    //reload kalo teken back button di browser
+    //credit: https://stackoverflow.com/questions/43043113/how-to-force-reloading-a-page-when-using-browser-back-button
+    window.addEventListener("pageshow", function(event) {
+        var historyTraversal = event.persisted || ( typeof window.performance != "undefined" && window.performance.navigation.type === 2 );
+        if ( historyTraversal ) {
+            window.location.reload();
+        }
+    });
 
 
 </script>

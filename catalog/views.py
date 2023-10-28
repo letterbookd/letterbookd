@@ -1,6 +1,9 @@
 from django.shortcuts import render
 
-from catalog.models import Book
+from catalog.models import *
+from review.models import *
+from library.models import *
+from reader.models import *
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponseNotFound
 from django.core import serializers
 from django.urls import reverse
@@ -39,6 +42,12 @@ def show_book_detail(request,id):
 def get_book_json(request):
     book = Book.objects.all()
     return HttpResponse(serializers.serialize('json', book))
+
+def get_favorited_library_book(request, id):
+    book = Book.objects.get(pk=id)
+
+    target_books = LibraryBook.objects.filter(book=book)
+    return HttpResponse(serializers.serialize('json', target_books))
 
 @csrf_exempt
 def add_book_ajax(request):
