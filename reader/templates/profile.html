@@ -69,7 +69,7 @@
                     <div class="mb-3">
                         <label for="username" class="col-form-label">Username:</label>
                         <input type="text" class="form-control" id="username" name="username" placeholder="Username" value="{{ reader.user }}" readonly>
-                    </div>                    
+                    </div>              
                     <div class="mb-3">
                         <label for="display_name" class="col-form-label">Display Name:</label>
                         <input type="text" class="form-control" id="display_name" name="display_name" placeholder="Display Name"></input>
@@ -136,8 +136,9 @@
         document.getElementById("username").value = username.textContent; 
 
         function editHandle(){
-            editProfile();
+            editProfile(userId);
         }
+
 
         document.getElementById("button_save").onclick = editHandle;
     }
