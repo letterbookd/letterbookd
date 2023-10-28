@@ -13,3 +13,4 @@ class LibraryBook(models.Model):
     book = models.ForeignKey(Book, on_delete=models.CASCADE)
     tracking_status = models.IntegerField() # 0: UNTRACKED, 1: FINISHED, 2: READING, 3: ON HOLD, 4: PLANNED, 5: DROPPED
     is_favorited = models.BooleanField(default=False)
+    is_reviewed = models.BooleanField(default=False)
