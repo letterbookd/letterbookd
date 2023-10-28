@@ -3,15 +3,14 @@ from django.shortcuts import render, get_object_or_404
 from reader.models import Reader
 from library.models import Library, LibraryBook
 from catalog.models import Book
-from django.http import HttpResponse, HttpResponseRedirect, HttpResponseNotFound, JsonResponse
-from django.core import serializers
-from django.urls import reverse
+from django.http import HttpResponse, HttpResponseNotFound, JsonResponse
 from django.contrib.auth.decorators import login_required
-from django.views.decorators.http import require_POST, require_GET
+from django.views.decorators.http import require_POST
 
 # Create your views here.
 @login_required(login_url='/login')
 def show_library(request):
+    ''' Menampilkan library milik user '''
     context = {
         'page_title': "Library",
         'display_name': get_object_or_404(Reader, user=request.user).display_name,
@@ -20,7 +19,7 @@ def show_library(request):
 
 @login_required(login_url='/login')
 def get_library(request):
-    # TODO mengembalikan json data library user
+    ''' Mengembalikan JSON data library milik user '''
     library_items = get_object_or_404(Library, reader__user=request.user).mybooks.all()
     book_items = Book.objects.filter(librarybook__in=library_items)
 
@@ -39,6 +38,7 @@ def get_library(request):
 @login_required(login_url='/login')
 @require_POST
 def update_book_status(request, book_id, status_code):
+    ''' Mengupdate status tracking buku yang ada di library '''
     book_to_update = Book.objects.get(pk=book_id)
     if (book_to_update is None):
         return HttpResponseNotFound()
@@ -53,6 +53,7 @@ def update_book_status(request, book_id, status_code):
 @login_required(login_url='/login')
 @require_POST
 def add_book(request, book_id):
+    ''' Menambah buku kedalam library milik user '''
     book_to_add = Book.objects.get(pk=book_id)
     if (book_to_add is None):
         return HttpResponseNotFound()
@@ -72,6 +73,7 @@ def add_book(request, book_id):
 @login_required(login_url='/login')
 @require_POST
 def remove_book(request, book_id):
+    ''' Mengeluarkan buku dari library milik user '''
     book_to_remove = Book.objects.get(pk=book_id)
     if book_to_remove is None:
         return HttpResponseNotFound()
@@ -86,6 +88,7 @@ def remove_book(request, book_id):
 @login_required(login_url='/login')
 @require_POST
 def favorite_book(request, book_id):
+    ''' Menandakan buku  sebagai favorit (dan sebaliknya) '''
     book_to_fav = Book.objects.get(pk=book_id)
     if book_to_fav is None:
         return HttpResponseNotFound()
@@ -95,7 +98,7 @@ def favorite_book(request, book_id):
         lib_book = LibraryBook()
         lib_book.library = get_object_or_404(Library, reader__user=request.user)
         lib_book.book = book_to_fav
-        lib_book.tracking_status = 0
+        lib_book.tracking_status = 0 # default: untracked
         lib_book.is_favorited = True
         lib_book.save()
         return HttpResponseNotFound()

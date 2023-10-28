@@ -69,9 +69,11 @@
     const url_add_book = "{% url 'library:add_book' id=12345 %}";
     const url_remove_book = "{% url 'library:remove_book' id=12345 %}";
     const url_favorite_book = "{% url 'library:favorite_book' id=12345 %}";
+    const url_book_details = "{% url 'catalog:show_book_detail' id=12345 %}";
+    // const url_review_book = "{% url 'library:favorite_book' id=12345 %}";
 
     const detailModal = document.getElementById("detail-modal");
-    const detailModalChanged = false;
+    var detailModalChanged = false;
 
     var sortOption = 'alphabetical'
     var filterOption = 'all'
@@ -129,6 +131,26 @@
         return sortedJson
     }
 
+    function renderTags() {
+        document.querySelectorAll('[data-tag-tracking-status]').forEach(tag => {
+            let tag_text = tag.getAttribute('data-tag-tracking-status');
+            if (tag_text == 0) {
+                tag_text = "untracked";
+            } else if (tag_text == 1) {
+                tag_text = "finished reading";
+            } else if (tag_text == 2) {
+                tag_text = "currently reading";
+            } else if (tag_text == 3) {
+                tag_text = "on hold";
+            } else if (tag_text == 4) {
+                tag_text = "planning to read";
+            } else if (tag_text == 5) {
+                tag_text = "dropped";
+            }
+            tag.textContent = tag_text;
+        })
+    }
+
     async function redrawLibrary() {
         let htmlString = ``;
         var counter = 0;
@@ -161,7 +183,7 @@
                                         <h5 class="card-title">${book_data.title}</h5>
                                         <span class="card-text">by ${book_data.authors}</span>
                                         <div class="mt-2">
-                                            <span class="badge bg-secondary">status: ${library_data.tracking_status}</span>
+                                            <span class="badge bg-secondary" data-tag-tracking-status=${library_data.tracking_status}></span>
                                         </div>
                                     </div>
                                     <div>
@@ -196,6 +218,7 @@
         }
         
         library_div.innerHTML = htmlString
+        renderTags();
         await connectListeners();
         console.log('counter: ' + counter)
     }
@@ -204,6 +227,8 @@
         const thumbnailImg = document.getElementById("detail-thumbnail")
         const titleLabel = document.getElementById("detail-title-label")
         const authorLabel = document.getElementById("detail-authors-label")
+        const bookLink = document.getElementById("detail-book-link")
+        const reviewLink = document.getElementById("detail-review-link")
 
         const item_data = cachedLibrary.filter(obj => obj["book_data"].id == id)[0];
 
@@ -212,6 +237,8 @@
         thumbnailImg.alt = "Cover of " + item_data["book_data"].title + " by " + item_data["book_data"].authors;
         titleLabel.textContent = item_data["book_data"].title;
         authorLabel.textContent = "by " + item_data["book_data"].authors;
+        bookLink.setAttribute('href', url_book_details.replace(/12345/, item_data["book_data"].id));
+        reviewLink.setAttribute('href', '#');
     }
 
     async function connectListeners() {
