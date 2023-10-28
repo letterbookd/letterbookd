@@ -70,6 +70,9 @@
     const url_remove_book = "{% url 'library:remove_book' id=12345 %}";
     const url_favorite_book = "{% url 'library:favorite_book' id=12345 %}";
 
+    const detailModal = document.getElementById("detail-modal");
+    const detailModalChanged = false;
+
     var sortOption = 'alphabetical'
     var filterOption = 'all'
     var layoutOption = 'grid'
@@ -125,15 +128,6 @@
         }
         return sortedJson
     }
-    async function refreshLibraryItem(id) {
-        const lib_book = (await getLibrary(id))[0]
-
-        let htmlString = `
-        ...
-        \n`
-
-        // document.querySelector("[data-item-id='" + id + "'] .card-body").innerHTML = htmlString
-    }
 
     async function redrawLibrary() {
         let htmlString = ``;
@@ -147,7 +141,7 @@
             if (layoutOption == 'grid') {
                 htmlString += 
                 `<div class="g-col">
-                    <div class="book-card p-0 d-flex flex-column justify-content-center m-0 gap-2" data-library-item-id=${library_data.id}>
+                    <div class="book-card p-0 d-flex flex-column justify-content-center m-0 gap-2" data-lib-book-id=${book_data.id}>
                         <img src=${book_data.thumbnail} class="img-fluid rounded border border-1 shadow-sm" alt="${book_data.title} by ${book_data.authors}" data-bs-toggle="modal" data-bs-target="#detail-modal">                     
                         <span class="text-center fst-italic">${book_data.title}</span>
                     </div>
@@ -156,16 +150,19 @@
             } else if (layoutOption == 'list') {
                 htmlString += 
                 `<div class="g-col">
-                    <div class="book-card card mb-3 shadow-sm bg-body-tertiary" data-library-item-id=${library_data.id}>
+                    <div class="book-card card mb-3 shadow-sm bg-body-tertiary" data-lib-book-id=${book_data.id}>
                         <div class="row g-0">
                             <div class="col-1 col-lg-2">
                                 <img src=${book_data.thumbnail} class="h-auto img-fluid rounded-start" alt="...">
                             </div>
                             <div class="col-11 col-lg-10">
                                 <div class="card-body d-flex flex-row">
-                                    <div class="me-auto">
+                                    <div class="me-auto d-flex flex-column">
                                         <h5 class="card-title">${book_data.title}</h5>
-                                        <p class="card-text">by ${book_data.authors}</p>
+                                        <span class="card-text">by ${book_data.authors}</span>
+                                        <div class="mt-2">
+                                            <span class="badge bg-secondary">status: ${library_data.tracking_status}</span>
+                                        </div>
                                     </div>
                                     <div>
                                         <button type="button" class="btn detail-modal-trigger" data-bs-toggle="modal" data-bs-title="Open detail" data-bs-trigger="hover" data-bs-target="#detail-modal">
@@ -203,11 +200,25 @@
         console.log('counter: ' + counter)
     }
 
+    async function updateDetailModal(id) {
+        const thumbnailImg = document.getElementById("detail-thumbnail")
+        const titleLabel = document.getElementById("detail-title-label")
+        const authorLabel = document.getElementById("detail-authors-label")
+
+        const item_data = cachedLibrary.filter(obj => obj["book_data"].id == id)[0];
+
+        detailModal.setAttribute("data-lib-book-id", id)
+        thumbnailImg.src = item_data["book_data"].thumbnail;
+        thumbnailImg.alt = "Cover of " + item_data["book_data"].title + " by " + item_data["book_data"].authors;
+        titleLabel.textContent = item_data["book_data"].title;
+        authorLabel.textContent = "by " + item_data["book_data"].authors;
+    }
+
     async function connectListeners() {
         if (layoutOption == 'grid') {
             document.querySelectorAll('#library-books img').forEach((element) => {
                 element.addEventListener("click", function(e){
-                    console.log(element.closest(".book-card").getAttribute("data-library-item-id"))
+                    updateDetailModal(element.closest(".book-card").getAttribute("data-lib-book-id"))
                 })
             })
         } else if (layoutOption == 'list') {
@@ -215,7 +226,7 @@
             document.querySelectorAll('#library-books .detail-modal-trigger').forEach((element) => {
                 new bootstrap.Tooltip(element);
                 element.addEventListener("click", function(e){
-                    console.log(element.closest(".book-card").getAttribute("data-library-item-id"))
+                    updateDetailModal(element.closest(".book-card").getAttribute("data-lib-book-id"))
                 })
             })
         }
@@ -225,46 +236,6 @@
         cachedLibrary = (await getLibrary())["library"];
         sortedCachedLibrary = await applySortAndFilters();
         await redrawLibrary();
-
-        // set event listeners for delete buttons
-        // const deleteButtons = document.getElementsByClassName("delete-item-button")
-        // for(var i = 0; i < deleteButtons.length; i++) {
-        //     (function(index) {
-        //         deleteButtons[index].addEventListener("click", function() {
-        //             setDeleteModalId(deleteButtons[index]);
-        //         })
-        //     })(i);
-        // }
-
-        // // set event listeners for edit buttons
-        // const editButtons = document.getElementsByClassName("edit-item-button")
-        // for(var i = 0; i < editButtons.length; i++) {
-        //     (function(index) {
-        //         editButtons[index].addEventListener("click", function() {
-        //             setEditModalId(editButtons[index]);
-        //         })
-        //     })(i);
-        // }
-
-        // // set event listeners for increment buttons
-        // const incrButtons = document.getElementsByClassName("increment-item-button")
-        // for(var i = 0; i < incrButtons.length; i++) {
-        //     (function(index) {
-        //         incrButtons[index].addEventListener("click", function() {
-        //             incrementItem(this.closest("div.card").dataset.itemId);
-        //         })
-        //     })(i);
-        // }
-
-        // // set event listeners for decrement buttons
-        // const decrButtons = document.getElementsByClassName("decrement-item-button")
-        // for(var i = 0; i < decrButtons.length; i++) {
-        //     (function(index) {
-        //         decrButtons[index].addEventListener("click", function() {
-        //             decrementItem(this.closest("div.card").dataset.itemId);
-        //         })
-        //     })(i);
-        // }
     }
     refreshLibrary()
 
@@ -369,6 +340,29 @@
     tooltipelements.forEach((el) => {
         new bootstrap.Tooltip(el);
     });
+
+    // modal stuff
+    document.getElementById('tracking-status-selection').addEventListener('input', async () => {
+        detailModalChanged = true;
+        // change status it
+    })
+    document.getElementById('lib_button_remove').addEventListener('click', async () => {
+        detailModalChanged = true;
+        // remove it
+    })
+    document.getElementById('lib_button_fav').addEventListener('click', async () => {
+        detailModalChanged = true;
+        // favorite it
+    })
+    detailModal.addEventListener('hide.bs.modal', async function(e) {
+        // check if theres any change
+        if (detailModalChanged === true) {
+            await refreshLibrary();
+        }
+        detailModalChanged = false;
+        console.log("boop")
+    })
+    
 </script>
 <!-- <script type="text/javascript" src="{% static '/library/js/library_handler.js' %}"></script> -->
 {% endblock scripts %}
