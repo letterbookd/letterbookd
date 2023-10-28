@@ -23,6 +23,7 @@ def show_librarian_catalog(request):
     }
     return render(request, "librarian_catalog.html", context)
 
+@login_required(login_url='/login')
 def show_reader_catalog(request):
     get_object_or_404(Reader, user=request.user) #authenticate reader
 
@@ -34,6 +35,7 @@ def show_reader_catalog(request):
     }
     return render(request, "reader_catalog.html", context)
 
+@login_required(login_url='/login')
 def show_book_detail(request,id):
     get_object_or_404(Reader, user=request.user) #authenticate reader
     
@@ -54,7 +56,7 @@ def get_book_json(request):
 def get_favorited_library_book(request, id):
     book = Book.objects.get(pk=id)
 
-    target_books = LibraryBook.objects.filter(book=book)
+    target_books = LibraryBook.objects.filter(book=book, is_favorited=True)
     return HttpResponse(serializers.serialize('json', target_books))
 
 @csrf_exempt
