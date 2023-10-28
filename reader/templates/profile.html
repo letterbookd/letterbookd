@@ -199,6 +199,7 @@
         document.getElementById("button_save").onclick = editHandle;
     }
 
+    /*
     document.getElementById('inputShareLibraryPreference').addEventListener('change', function() {
         const shareLibraryStatus = document.getElementById('shareLibraryStatus');
         const librarySection = document.getElementById('librarySection');
@@ -210,6 +211,7 @@
             librarySection.style.display = "none";
         }
     });
+    */
 
 
     async function editProfile(id){
@@ -224,6 +226,7 @@
         if(response.ok){
             refreshProfile();
             // Cek lagi setelah data disimpan
+            /*
             const shareLibraryStatus = document.getElementById('shareLibraryStatus');
             const librarySection = document.getElementById('librarySection');
             const shareLibraryPreference = document.getElementById('inputShareLibraryPreference');
@@ -234,6 +237,7 @@
                 shareLibraryStatus.textContent = "Not Sharing Library";
                 librarySection.style.display = "none";
             }
+            */
         }
     }
 
@@ -246,10 +250,34 @@
         if (updatedReader) {
             document.querySelector("p#display_name").textContent = updatedReader.display_name;
             document.querySelector("p#bio").textContent = updatedReader.bio;
+
+            const shareLibraryPreference = document.getElementById('inputShareLibraryPreference');
+            const shareLibraryStatus = document.getElementById('shareLibraryStatus');
+            const librarySection = document.getElementById('librarySection');
+            
+            if (shareLibraryPreference.checked) {
+                shareLibraryStatus.textContent = "Sharing Library";
+                librarySection.style.display = "block";
+            } else {
+                shareLibraryStatus.textContent = "Not Sharing Library";
+                librarySection.style.display = "none";
+            }
         }
     }
 
     refreshProfile();
+
+    document.getElementById('inputShareLibraryPreference').addEventListener('change', function() {
+        const shareLibraryStatus = document.getElementById('shareLibraryStatus');
+        const librarySection = document.getElementById('librarySection');
+        if (this.checked) {
+            shareLibraryStatus.textContent = "Sharing Library";
+            librarySection.style.display = "block";
+        } else {
+            shareLibraryStatus.textContent = "Not Sharing Library";
+            librarySection.style.display = "none";
+        }
+    });
 
     document.querySelector('[data-bs-target="#edit-profile-modal"]').addEventListener('click', editReaderModal);
 
