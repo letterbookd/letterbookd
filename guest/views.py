@@ -11,6 +11,8 @@ from library.models import Library
 
 # Views for Guest
 def show_landing(request):
+    if request.user.is_authenticated:
+        return HttpResponseRedirect(reverse("library:show_library"))
     return render(request, 'main.html', context={})
 
 def user_login(request):

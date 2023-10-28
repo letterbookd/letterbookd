@@ -9,7 +9,8 @@ class Library(models.Model):
 class LibraryBook(models.Model):
     ''' Data untuk buku yang ada di Library '''
     
-    library = models.ForeignKey(Library, on_delete=models.CASCADE)
+    library = models.ForeignKey(Library, on_delete=models.CASCADE, related_name='mybooks')
     book = models.ForeignKey(Book, on_delete=models.CASCADE)
-    tracking_status = models.IntegerField() # 0: UNTRACKED, 1: FINISHED, 2: READING, 3: ON HOLD, 4: PLANNED, 5: DROPPED
+    tracking_status = models.IntegerField(default=0) # 0: UNTRACKED, 1: FINISHED, 2: READING, 3: ON HOLD, 4: PLANNED, 5: DROPPED
     is_favorited = models.BooleanField(default=False)
+    is_reviewed = models.BooleanField(default=False)

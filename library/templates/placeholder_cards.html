@@ -1,0 +1,45 @@
+{% for i in '012'|make_list %}
+    <div class="col">
+      <div class="card h-100" aria-hidden="true">
+          <div class="card-body">
+              <h5 class="card-title text-center placeholder-glow">
+                <span class="placeholder col-6"></span>
+              </h5>
+              <hr/>
+              <p class="card-text mb-3 placeholder-glow">
+                <span class="placeholder col-12"></span>
+                <span class="placeholder col-5"></span>
+                <span class="placeholder col-6"></span>
+              </p>
+              <div class="container text-left">
+                  <div class="row g-2 mb-1">
+                      <div class="text-body-secondary col-4 p-0 placeholder-glow"><span class="placeholder col-10"></span></div>
+                      <div class="col-8 p-0 placeholder-glow"><span class="placeholder col-5"></span></div>
+                  </div>
+                  <div class="row g-2 mb-1">
+                      <div class="text-body-secondary col-4 p-0 placeholder-glow"><span class="placeholder col-8"></span></div>
+                      <div class="col-8 p-0 placeholder-glow"><span class="placeholder col-4"></span></div>
+                  </div>
+                  <div class="row g-2 mb-1">
+                    <div class="text-body-secondary col-4 p-0 placeholder-glow"><span class="placeholder col-4"></span></div>
+                    <div class="col-8 p-0 placeholder-glow"><span class="placeholder col-6"></span></div>
+                  </div>
+                  <div class="row g-2 mb-1">
+                    <div class="text-body-secondary col-4 p-0 placeholder-glow"><span class="placeholder col-10"></span></div>
+                    <div class="col-8 p-0 placeholder-glow"><span class="placeholder col-10"></span></div>
+                  </div>
+              </div>
+          </div>
+          <div class="card-footer">
+              <div class="gap-2 d-flex justify-content-end">
+                  <div class="btn-group" role="group">
+                      <button type="button" class="btn btn-secondary p-2 disabled placeholder col-1" aria-disabled="true"></button>
+                      <button type="button" class="btn btn-secondary p-2 disabled placeholder col-1" aria-disabled="true"></button>
+                  </div>
+                  <button type="button" class="btn btn-warning disabled placeholder col-1" aria-disabled="true"></button>
+                  <button type="button" class="btn btn-danger disabled placeholder col-1" aria-disabled="true"></button>
+              </div>
+          </div>
+      </div>
+    </div>
+{% endfor %}
