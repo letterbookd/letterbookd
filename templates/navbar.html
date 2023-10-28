@@ -25,7 +25,7 @@
                     <a class="nav-link" aria-current="page" href="{% url 'forum:show_threads' %}">Forum</a>
                 </li>
 
-                <!--
+                
                 <form class="d-flex" action="{% url 'reader:search_handler' %}" method="get">
                     <select class="form-select me-2" name="search_type" aria-label="Search Type">
                         <option value="catalog" selected>Search in Catalog</option>
@@ -36,35 +36,9 @@
                     
                     <button class="btn btn-outline-success" type="submit">Search</button>
                 </form>
-                -->
+                
                 {% endif %}
             </ul>
-
-            
-            
-
-            <!--
-            <div class="container mt-5">
-                <form action="{% url 'reader:search_handler' %}" method="get" class="d-flex">
-                    <div class="input-group" style="max-width: 400px;">
-                        <div class="input-group-prepend">
-                            <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" id="categoryLabel" style="max-width: 140px; overflow: hidden; text-overflow: ellipsis;">Search in Catalog</button>
-                            <div class="dropdown-menu">
-                                <a class="dropdown-item" href="#" data-value="catalog" onclick="setSearchType('Search in Catalog', 'catalog')">Search in Catalog</a>
-                                <a class="dropdown-item" href="#" data-value="library" onclick="setSearchType('Search in Library', 'library')">Search in Library</a>
-                                <a class="dropdown-item" href="#" data-value="reader" onclick="setSearchType('Search Reader', 'reader')">Search Reader</a>
-                                <input type="hidden" name="search_type" id="hiddenSearchType" value="catalog">
-                            </div>
-                        </div>
-                        <input type="text" class="form-control" placeholder="Search" aria-label="Search" name="q" style="max-width: 160px;">
-                        <div class="input-group-append">
-                            <button class="btn btn-outline-success" type="submit" style="width: 80px;">Search</button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-            -->
-            
 
             <button class="btn align-middle" data-bs-theme-value="dark">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi mb-1" id="theme-icon" viewBox="0 0 16 16"></svg>

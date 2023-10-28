@@ -9,7 +9,8 @@
     {% for reader in readers %}
         <li>
 
-            <h2>{{ reader.display_name }}</h2>
+            <h2>Username: {{ reader.user }}</h2>
+            <p>Display Name: {{ reader.display_name }}</p>
             <p>Bio: {{ reader.bio }}</p>
             <p>{{ reader.profile_picture }}</p>
 

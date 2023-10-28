@@ -2,7 +2,7 @@
 
 {% block content %}
 
-<style>
+<style> 
     .custom-profile-picture {
         width: 250px;
         height: 250px;
@@ -10,6 +10,12 @@
 
     .custom-col {
         height: 300px; 
+    }
+
+    input[readonly] {
+        background-color: #e9ecef; 
+        color: #495057;           
+        cursor: not-allowed;    
     }
 
 
@@ -25,6 +31,10 @@
         </div>
         
         <div class="col">
+
+            <p><b>Username:</b></p>
+            <p id="username">{{ reader.user }}</p>
+
             <p><b>Display Name:</b></p>
             <p id="display_name">{{ reader.display_name }}</p>
 
@@ -57,12 +67,16 @@
                 <form method="POST" id="form" onsubmit="return false;">
                     {% csrf_token %}
                     <div class="mb-3">
+                        <label for="username" class="col-form-label">Username:</label>
+                        <input type="text" class="form-control" id="username" name="username" placeholder="Username" value="{{ reader.user }}" readonly>
+                    </div>                    
+                    <div class="mb-3">
                         <label for="display_name" class="col-form-label">Display Name:</label>
                         <input type="text" class="form-control" id="display_name" name="display_name" placeholder="Display Name"></input>
                     </div>
                     <div class="mb-3">
                         <label for="bio" class="col-form-label">Bio:</label>
-                        <textarea class="form-control" id="bio" name="bio" placeholder="Bio: "></textarea>
+                        <textarea class="form-control" id="bio" name="bio" placeholder="Bio"></textarea>
                     </div>
                     <h3>Preferences</h3>
                     <div class="mb-3 form-check">
@@ -95,6 +109,7 @@
         return fetch("{% url 'reader:get_all_readers_json' %}").then((res) => res.json())
     }
 
+    /*
     function editReaderModal(){
         const display_name = document.getElementById(`display_name`);
         const bio = document.getElementById(`bio`);
@@ -109,6 +124,24 @@
 
         document.getElementById("button_save").onclick = editHandle;
     }
+    */
+
+    function editReaderModal(){
+        const display_name = document.getElementById(`display_name`);
+        const bio = document.getElementById(`bio`);
+        const username = document.getElementById(`username`);
+
+        document.getElementById("display_name").value = display_name.textContent;
+        document.getElementById("bio").value = bio.textContent;
+        document.getElementById("username").value = username.textContent; 
+
+        function editHandle(){
+            editProfile();
+        }
+
+        document.getElementById("button_save").onclick = editHandle;
+    }
+
 
 
     async function editProfile(id){
@@ -125,7 +158,6 @@
     }
 
     async function refreshProfile(id){
-        // Fetch the updated profile details
         const readerDetailUrl = "{% url 'reader:show_json_by_id' id=request.user.id %}"; 
         const response = await fetch(readerDetailUrl);
         const updatedReaderData = await response.json();

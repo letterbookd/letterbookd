@@ -6,8 +6,8 @@ from django.contrib.auth.models import User
 from library.models import *
 from catalog.models import *
 from django.views.decorators.csrf import csrf_exempt
-from django.http import HttpResponse
 from django.core import serializers
+from django.db.models import Q
 
 # Menampilkan halaman profile Reader
 def show_profile(request, id):
@@ -31,45 +31,23 @@ def edit_profile(request, user_id):
             return JsonResponse({'status': 'error', 'message': 'There was an error updating the profile'})
     return JsonResponse({'status': 'error', 'message': 'Invalid request method'})
 
-# Render halaman setting untuk Reader
-def user_settings(request):
-    reader = get_object_or_404(Reader, user=request.user)
-    
-    reader_form = ReaderForm(instance=reader)
-    preferences_form = ReaderPreferencesForm(instance=reader.preferences)
 
-    context = {
-        'reader_form': reader_form,
-        'preferences_form': preferences_form
-    }
-    
-    return render(request, 'user_settings.html', context)
-
-
-# Menampilkan hasil searching buku untuk suatu reader di catalog
-def search_catalog(request):
-    query = request.GET.get('q')
-    results = Book.objects.filter(title__icontains=query)
-    return render(request, 'book_search_results.html', {'results': results})
-
-# Menampilkan hasil searching buku untuk suatu reader di library
-def search_library(request):
-    query = request.GET.get('q')
-    user_books = LibraryBook.objects.filter(user=request.user, book__title__icontains=query)
-    return render(request, 'book_search_results.html', {'results': user_books})
-
+# Menampilkan data JSON readers 
 def show_json(request):
     all_readers = Reader.objects.all()
     return HttpResponse(serializers.serialize("json", all_readers), content_type="application/json")
 
+# Menampilkan data JSON specific reader berdasarkan ID 
 def show_json_by_id(request, id):
     specific_reader = Reader.objects.filter(pk=id)
     return HttpResponse(serializers.serialize("json", specific_reader), content_type="application/json")
 
+# Mendapatkan data JSON readers
 def get_all_readers_json(request):
     all_readers = Reader.objects.all()
     return HttpResponse(serializers.serialize('json', all_readers))
 
+# Mengubah profile reader
 @csrf_exempt
 def edit_profile_ajax(request, id):
     if request.method == 'POST':
@@ -80,27 +58,28 @@ def edit_profile_ajax(request, id):
 
         reader.display_name = display_name
         reader.bio = bio
-   
+
         reader.save()
 
         return HttpResponse(b"CREATED", status=201)
 
     return HttpResponseNotFound()
 
+# Mencari di catalog/library/reader
 def search_handler(request):
     query = request.GET.get('q')
     search_type = request.GET.get('search_type')
 
     if search_type == "catalog":
-        results = Book.objects.filter(titleicontains=query)
+        results = Book.objects.filter(title__icontains=query)
         return render(request, 'book_search_results.html', {'results': results})
 
-    elif search_type == "library":
-        user_books = LibraryBook.objects.filter(user=request.user, booktitleicontains=query)
+    elif search_type == "library": # INI MASIH ERROR
+        user_books = LibraryBook.objects.filter(user=request.user, book__title__icontains=query)
         return render(request, 'book_search_results.html', {'results': user_books})
 
     elif search_type == "reader":
-        readers = Reader.objects.filter(display_nameicontains=query)
+        readers = Reader.objects.filter(Q(display_name__icontains=query) | Q(user__username__icontains=query))
         return render(request, 'user_search_results.html', {'readers': readers})
 
     else:
