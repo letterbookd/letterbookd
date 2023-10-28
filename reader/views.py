@@ -8,11 +8,32 @@ from catalog.models import *
 from django.views.decorators.csrf import csrf_exempt
 from django.core import serializers
 from django.db.models import Q
+from django.contrib.auth.decorators import login_required
+
 
 # Menampilkan halaman profile Reader
+'''
 def show_profile(request, id):
     reader = get_object_or_404(Reader, user__id=id)
     return render(request, 'profile.html', {'reader': reader, 'page_title': 'Profile'})
+'''
+
+@login_required(login_url='/login')
+def show_profile(request, id):
+    # Dapatkan objek reader
+    reader = get_object_or_404(Reader, user__id=id)
+
+    # Dapatkan semua buku di library pengguna
+    library_books = LibraryBook.objects.filter(library__reader=reader)
+
+    context = {
+        'reader': reader,
+        'page_title': "Profile",
+        'library_books': library_books,
+    }
+
+    return render(request, 'profile.html', context)
+
 
 # Mengembalikan halaman hasil searching Reader dengan display_name
 def search_reader(request, display_name):
@@ -95,3 +116,23 @@ def search_handler(request):
 
     else:
         return HttpResponse("Invalid search type.")
+
+@login_required(login_url='/login')
+def show_user_library(request):
+    ''' Menampilkan semua buku di library milik user '''
+    
+    # Dapatkan library milik user
+    user_library = get_object_or_404(Library, reader__user=request.user) 
+    
+    # Dapatkan semua LibraryBook yang terkait dengan library user tersebut
+    user_library_books = user_library.mybooks.all()
+    
+    # Dapatkan semua buku dari setiap LibraryBook
+    books_in_library = [lib_book.book for lib_book in user_library_books]
+
+    context = {
+        'page_title': "My Library",
+        'books': books_in_library,
+        'display_name': get_object_or_404(Reader, user=request.user).display_name, 
+    }
+    return render(request, './user_library.html', context)
