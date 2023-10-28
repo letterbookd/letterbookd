@@ -2,25 +2,38 @@
 
 {% block content %}
 
-<h1>Search Results</h1>
+<style>
+    .center-content {
+        display: flex;          
+        justify-content: center; 
+        align-items: center;     
+        flex-direction: column;  
+    }
 
-{% if readers.count > 0 %}
-    <ul>
-    {% for reader in readers %}
-        <li>
+</style>
 
-            <h2>Username: {{ reader.user }}</h2>
-            <p>Display Name: {{ reader.display_name }}</p>
-            <p>Bio: {{ reader.bio }}</p>
-            <p>{{ reader.profile_picture }}</p>
+<h1 class="mt-4 mb-4">Search Results</h1>
 
-            <!-- belum show personal_library, preferences -->
-
-        </li>
-    {% endfor %}
-    </ul>
-{% else %}
-    <p>No readers found with the name you searched for</p> <!-- nanti diganti -->
-{% endif %}
+<div class="container">
+    {% if readers.count > 0 %}
+        <div class="row">
+        {% for reader in readers %}
+            <div class="col-md-4 mb-4">
+                <div class="card"> 
+                    <div class="card-body center-content">
+                        <img src="/static/images/pfp_0.jpg" alt="Profile Photo" class="rounded-circle mb-3" style="max-width: 100px;"> 
+                        <h5 class="card-title">{{ reader.user }}</h5>
+                        <p class="card-text">{{ reader.display_name }}</p>
+                        <p class="card-text">{{ reader.bio }}</p>
+                        <button type="button" class="btn btn-primary mb-4" data-bs-toggle="modal" data-bs-target="#edit-profile-modal">View Profile</button>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+        </div>
+    {% else %}
+        <p>No readers found with the name you searched for</p> 
+    {% endif %}
+</div>
 
 {% endblock content %}

@@ -53,11 +53,21 @@ def edit_profile_ajax(request, id):
     if request.method == 'POST':
         display_name = request.POST.get("display_name")
         bio = request.POST.get("bio")
+        
+        # NYOBA BARU
+        share_reviews = request.POST.get("share_reviews")
+        share_library = request.POST.get("share_library")
+        #
 
         reader = Reader.objects.get(pk = id)
 
         reader.display_name = display_name
         reader.bio = bio
+        
+        # NYOBA BARU
+        reader.share_reviews = share_reviews
+        reader.share_library = share_library
+        #
 
         reader.save()
 
@@ -76,6 +86,7 @@ def search_handler(request):
 
     elif search_type == "library": # INI MASIH ERROR
         user_books = LibraryBook.objects.filter(user=request.user, book__title__icontains=query)
+        #user_books = LibraryBook.objects.filter(library__user=request.user, book__title__icontains=query)
         return render(request, 'book_search_results.html', {'results': user_books})
 
     elif search_type == "reader":
