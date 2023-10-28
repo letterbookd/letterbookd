@@ -70,7 +70,7 @@
     const url_remove_book = "{% url 'library:remove_book' id=12345 %}";
     const url_favorite_book = "{% url 'library:favorite_book' id=12345 %}";
     const url_book_details = "{% url 'catalog:show_book_detail' id=12345 %}";
-    // const url_review_book = "{% url 'library:favorite_book' id=12345 %}";
+    // const url_review_book = "url 'review:show_reviews' id=12345 %}";
 
     const detailModal = document.getElementById("detail-modal");
     var detailModalChanged = false;
@@ -80,6 +80,7 @@
     var layoutOption = 'grid'
     var cachedLibrary = null;
     var sortedCachedLibrary = null;
+
     async function getLibrary() {
         return fetch(url_get_library).then((res) => res.json())
     }
@@ -238,7 +239,7 @@
         titleLabel.textContent = item_data["book_data"].title;
         authorLabel.textContent = "by " + item_data["book_data"].authors;
         bookLink.setAttribute('href', url_book_details.replace(/12345/, item_data["book_data"].id));
-        reviewLink.setAttribute('href', '#');
+        reviewLink.setAttribute('href', 'url_review_book.replace(/12345/, item_data["book_data"].id)');
     }
 
     async function connectListeners() {
