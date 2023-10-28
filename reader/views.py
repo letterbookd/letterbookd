@@ -1,6 +1,6 @@
 from django.http import HttpResponse, HttpResponseNotFound, JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Reader
+from .models import Reader, ReaderPreferences
 from .forms import ReaderForm, ReaderPreferencesForm
 from django.contrib.auth.models import User
 from library.models import *
@@ -42,13 +42,14 @@ def show_profile(request, id):
     # Dapatkan objek reader
     reader = get_object_or_404(Reader, user__id=id)
 
-    # Dapatkan semua buku di library pengguna
-    library_books = LibraryBook.objects.filter(library__reader=reader)
+    # Dapatkan 3 buku di library pengguna
+    library_items = get_object_or_404(Library, reader__user=request.user).mybooks.order_by('-id')[:3].all()
+
 
     context = {
         'reader': reader,
         'page_title': "Profile",
-        'library_books': library_books,
+        'library_items': library_items,
     }
 
     return render(request, 'profile.html', context)
@@ -95,8 +96,9 @@ def edit_profile_ajax(request, id):
         bio = request.POST.get("bio")
         
         # NYOBA BARU
-        share_reviews = request.POST.get("share_reviews")
-        share_library = request.POST.get("share_library")
+        share_reviews = request.POST.get("share_reviews") == "true"
+        share_library = request.POST.get("share_library") == "true"
+
         #
 
         reader = Reader.objects.get(pk = id)
@@ -105,8 +107,10 @@ def edit_profile_ajax(request, id):
         reader.bio = bio
         
         # NYOBA BARU
-        reader.share_reviews = share_reviews
-        reader.share_library = share_library
+        reader.preferences.share_reviews = share_reviews
+        reader.preferences.share_library = share_library
+        reader.preferences.save()
+
         #
 
         reader.save()
@@ -155,3 +159,36 @@ def show_user_library(request):
         'display_name': get_object_or_404(Reader, user=request.user).display_name, 
     }
     return render(request, './user_library.html', context)
+
+
+def get_reader_json(request):
+    try:
+        reader = get_object_or_404(Reader, user=request.user)
+        
+        reader_data = {
+            'display_name': reader.display_name,
+            'bio': reader.bio,
+            'profile_picture': reader.profile_picture,
+            # 'personal_library': reader.personal_library,
+            'preferences': {
+                'share_reviews': reader.preferences.share_reviews,
+                'share_library': reader.preferences.share_library
+            }
+        }
+
+        print(reader_data)
+
+        return JsonResponse(reader_data)
+    except Reader.DoesNotExist or ReaderPreferences.DoesNotExist:
+        return JsonResponse({'error': 'Data not found'}, status=404)
+    
+def get_readers_json(request):
+    readers = list(Reader.objects.values())  # Convert QuerySet to a list of dictionaries
+    reader_preferences = list(ReaderPreferences.objects.values())  # Convert QuerySet to a list of dictionaries
+
+    combined_data = {
+        'readers': readers,
+        'reader_preferences': reader_preferences
+    }
+
+    return JsonResponse(combined_data)

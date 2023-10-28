@@ -12,4 +12,8 @@ urlpatterns = [
     path('get-reader/', get_all_readers_json, name='get_all_readers_json'),
     path('edit-profile-ajax/<int:id>/', edit_profile_ajax, name='edit_profile_ajax'),
     path('search/', search_handler, name='search_handler'),
+    
+    path('get-reader-json/', get_reader_json, name='get_reader_json'),
+    path('get-readers-json/', get_readers_json, name='get_readers_json'),
+    
 ]
