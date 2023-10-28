@@ -25,7 +25,7 @@
                         <h5 class="card-title">{{ reader.user }}</h5>
                         <p class="card-text">{{ reader.display_name }}</p>
                         <p class="card-text">{{ reader.bio }}</p>
-                        <button type="button" class="btn btn-primary mb-4" data-bs-toggle="modal" data-bs-target="#edit-profile-modal">View Profile</button>
+                        <a href="{% url 'reader:show_profile' id=reader.user.id %}" class="btn btn-primary mb-4">View Profile</a>
                     </div>
                 </div>
             </div>

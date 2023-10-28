@@ -54,10 +54,12 @@
             {% endfor %}
             </ul>
 
-            <div class="rounded p-4 bg-transparent" id="product_cards_container">
-                <button type="button" class="btn btn-primary mb-4" data-bs-toggle="modal" data-bs-target="#edit-profile-modal">Edit Profile</button>
-                <div class="row row-cols-1 row-cols-md-3 g-4" id="product_cards"></div>
-            </div>
+            {% if reader.user == request.user %}
+                <div class="rounded p-4 bg-transparent" id="product_cards_container">
+                    <button type="button" class="btn btn-primary mb-4" data-bs-toggle="modal" data-bs-target="#edit-profile-modal">Edit Profile</button>
+                    <div class="row row-cols-1 row-cols-md-3 g-4" id="product_cards"></div>
+                </div>
+            {% endif %}
         </div>
     </div>
 </div>

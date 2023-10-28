@@ -18,6 +18,25 @@ def show_profile(request, id):
     return render(request, 'profile.html', {'reader': reader, 'page_title': 'Profile'})
 '''
 
+'''
+@login_required(login_url='/login')
+def show_profile(request, id):
+    # Dapatkan objek reader
+    reader = get_object_or_404(Reader, user__id=id)
+
+    # Dapatkan semua buku di library pengguna
+    library_books = LibraryBook.objects.filter(library__reader=reader)
+
+    context = {
+        'reader': reader,
+        'page_title': "Profile",
+        'library_books': library_books,
+    }
+
+    return render(request, 'profile.html', context)
+'''
+
+
 @login_required(login_url='/login')
 def show_profile(request, id):
     # Dapatkan objek reader
