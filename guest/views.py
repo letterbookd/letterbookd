@@ -5,6 +5,9 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from forum.views import user_thread_data, user_liked_thread_data
+
 
 from reader.models import *
 from library.models import Library
@@ -12,6 +15,8 @@ from catalog.models import Librarian
 
 # Views for Guest
 def show_landing(request):
+    if request.user.is_authenticated:
+        return HttpResponseRedirect(reverse("library:show_library"))
     return render(request, 'main.html', context={})
 
 def user_login(request):
@@ -68,5 +73,5 @@ def user_logout(request):
     response = HttpResponseRedirect(reverse('guest:landing_page'))
     return response
 
-def error_404_view(request):
-    return render(request, '404.html', status=404, context={'page_title': 'Uh oh'})
+
+

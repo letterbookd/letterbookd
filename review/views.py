@@ -5,12 +5,16 @@ from django.http import HttpResponse, HttpResponseRedirect, HttpResponseNotFound
 from django.views.decorators.csrf import csrf_exempt
 from django.core import serializers
 from django.urls import reverse
+from django.shortcuts import redirect   
+from django.contrib.auth.decorators import login_required #agar pengguna harus login sebelum mengakses suatu web
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
 
 # Create your views here.
 def show_reviews(request, book_id):
     # TODO: render semua review dari buku
     reviews = Review.objects.filter (book_id = book_id)
-    return render (request, 'main.html', {'reviews': reviews})
+    return render (request, 'review.html', {'reviews': reviews})
 
 def get_all_user_reviews(request):
     # TODO: mengembalikan json isinya semua review milik Reader
@@ -50,4 +54,4 @@ def delete_review(request, review_id):
     # TODO: hapus reviewnya (ajax)
     review = Review.objects.get(id=review_id) 
     review.delete()
-    return redirect('main:show_main')
+    return redirect('main:review')
