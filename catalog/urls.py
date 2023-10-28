@@ -1,5 +1,5 @@
 from django.urls import path
-from catalog.views import get_book_json, add_book_ajax, show_librarian_catalog, show_reader_catalog, show_book_detail,show_json, show_json_by_id, edit_book_ajax, delete_book_ajax
+from catalog.views import *
 
 app_name = 'catalog'
 
@@ -13,4 +13,5 @@ urlpatterns = [
     path('json/<int:id>/', show_json_by_id, name='show_json_by_id'),
     path('edit-book/<int:id>/', edit_book_ajax, name='edit_book_ajax'),
     path('delete-book/<int:id>/', delete_book_ajax, name='delete_book_ajax'),
+    path('get-favorited-library-book/<int:id>', get_favorited_library_book, name='get_favorited_library_book'),
 ]
