@@ -19,7 +19,7 @@
 </div>
 
 <div>
-    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#add-book-modal" onclick="setAddBookModal()">Add Book</button>
+<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#add-book-modal" onclick="setAddBookModal()">Add Book</button>
 </div>
 
 <div class="book-container" id="book-container"></div>
@@ -34,43 +34,14 @@
             <div class="modal-body">
                 <form id="form" onsubmit="return false;">
                     {% csrf_token %}
-                    <div class="mb-3">
-                        <label for="isbn13" class="col-form-label">ISBN:</label>
-                        <input type="number" class="form-control" id="isbn13" name="isbn13"></input>
-                    </div>
-                    <div class="mb-3">
-                        <label for="title" class="col-form-label">Title:</label>
-                        <input type="text" class="form-control" id="title" name="title"></input>
-                    </div>
-                    <div class="mb-3">
-                        <label for="authors" class="col-form-label">Authors:</label>
-                        <input type="text" class="form-control" id="authors" name="authors"></input>
-                    </div>
-                    <div class="mb-3">
-                        <label for="category" class="col-form-label">Category:</label>
-                        <input type="text" class="form-control" id="categories" name="categories"></input>
-                    </div>
-                    <div class="mb-3">
-                        <label for="thumbnail" class="col-form-label">Thumbnail URL:</label>
-                        <input type="text" class="form-control" id="thumbnail" name="thumbnail"></input>
-                    </div>
-                    <div class="mb-3">
-                        <label for="description" class="col-form-label">Description:</label>
-                        <textarea class="form-control" id="description" name="description"></textarea>
-                    </div>
-                    <div class="mb-3">
-                        <label for="published_year" class="col-form-label">Published year:</label>
-                        <input type="number" class="form-control" id="published_year" name="published_year"></input>
-                    </div>
-                    <div class="mb-3">
-                        <label for="page_count" class="col-form-label">Page count:</label>
-                        <input type="number" class="form-control" id="page_count" name="page_count"></input>
-                    </div>
+                    <table>
+                    {{ form.as_p }}
+                    </table>
                 </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" id="button_add" data-bs-dismiss="modal">Add Book</button>
+                <input type="submit" class="btn btn-primary" id="button_add" data-bs-dismiss="modal" value="Add Book"/>
             </div>
         </div>
     </div>
@@ -113,7 +84,7 @@
         fetch("{% url 'catalog:add_book_ajax' %}", {
             method: "POST",
             body: new FormData(document.querySelector('#form'))
-        }).then(refreshBook)
+        }).then(refreshBookSorted)
 
         document.getElementById("form").reset()
         return false
@@ -162,6 +133,7 @@
             refreshBook();
         }
     }
+
 
     //--------------------------------------------------------------------------------------------
 
