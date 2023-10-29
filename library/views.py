@@ -2,6 +2,8 @@ from django.shortcuts import render, get_object_or_404
 
 from reader.models import Reader
 from library.models import Library, LibraryBook
+from library.forms import LibraryBookForm
+from django.db import IntegrityError
 from catalog.models import Book
 from django.http import HttpResponse, HttpResponseNotFound, JsonResponse
 from django.contrib.auth.decorators import login_required
@@ -11,9 +13,12 @@ from django.views.decorators.http import require_POST
 @login_required(login_url='/login')
 def show_library(request):
     ''' Menampilkan library milik user '''
+   
+    lib_book = get_object_or_404(Library, reader__user=request.user)
     context = {
         'page_title': "Library",
         'display_name': get_object_or_404(Reader, user=request.user).display_name,
+        'form': LibraryBookForm(instance=LibraryBook(library=lib_book))
     }
     return render(request, './library.html', context)
 
@@ -52,29 +57,28 @@ def update_book_status(request, book_id, status_code):
 
 @login_required(login_url='/login')
 @require_POST
-def add_book(request, book_id):
+def add_book(request):
     ''' Menambah buku kedalam library milik user '''
-    book_to_add = Book.objects.get(pk=book_id)
-    if (book_to_add is None):
-        return HttpResponseNotFound()
-    
-    lib_book = get_object_or_404(Library, reader__user=request.user).mybooks.get(book=book_to_add)
-    if lib_book is not None:
-        return HttpResponseNotFound()
-    
-    lib_book = LibraryBook()
-    lib_book.library = get_object_or_404(Library, reader__user=request.user)
-    lib_book.book = book_to_add
-    lib_book.tracking_status = 0
-    lib_book.save()
 
-    return HttpResponse(b"CREATED", status=201)
+    reader_library = get_object_or_404(Library, reader__user=request.user)
+    bookForm = LibraryBookForm(request.POST)
+    if bookForm.is_valid():
+        book_to_add = bookForm.save(commit=False)
+        try:
+            LibraryBook.objects.get(library=reader_library, book=book_to_add.book)
+        except LibraryBook.DoesNotExist:
+            book_to_add.library = get_object_or_404(Library, reader__user=request.user)
+            book_to_add.save()
+            bookForm.save_m2m()
+            return HttpResponse(b"CREATED", status=201)
+        
+    return HttpResponse(b"EXISTS", status=409)
 
 @login_required(login_url='/login')
 @require_POST
-def remove_book(request, book_id):
+def remove_book(request):
     ''' Mengeluarkan buku dari library milik user '''
-    book_to_remove = Book.objects.get(pk=book_id)
+    book_to_remove = Book.objects.get()
     if book_to_remove is None:
         return HttpResponseNotFound()
     
@@ -87,9 +91,9 @@ def remove_book(request, book_id):
 
 @login_required(login_url='/login')
 @require_POST
-def favorite_book(request, book_id):
+def favorite_book(request):
     ''' Menandakan buku  sebagai favorit (dan sebaliknya) '''
-    book_to_fav = Book.objects.get(pk=book_id)
+    book_to_fav = Book.objects.get()
     if book_to_fav is None:
         return HttpResponseNotFound()
     
