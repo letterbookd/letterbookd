@@ -14,6 +14,15 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404
 
+def book_in_library(request, id):
+    reader = Reader.objects.get(user=request.user)
+    library = reader.personal_library
+    book = Book.objects.get(pk=id)
+
+    target_book = LibraryBook.objects.filter(library=library, book=book)
+    return HttpResponse(serializers.serialize('json', target_book))
+
+
 @login_required(login_url='/login')
 def show_librarian_catalog(request):
     get_object_or_404(Librarian, user=request.user) #authorize librarian

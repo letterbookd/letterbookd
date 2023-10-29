@@ -10,26 +10,36 @@
 
 <!----------------------------------------------------------------------------------------------------------->
 
-<div class="total-books" id="total-books">
+<div class="d-flex justify-content-center mb-3">
+    <h2>Librarian Catalog</h2>
+</div>
+
+<div class="d-flex justify-content-center mb-3" id="total-books">
     <p>- {{books.count}} books in total -</p>
 </div>
 
-<div class="search-wrapper d-flex">
-    <input type="search" id="search" class="ms-1" type="text">
-    <button class="btn btn-primary ms-1" id="search_button">Search</button>
+<div class="d-flex align-items-center justify-content-center mb-3">
+    <div class="input-group rounded d-flex w-auto">
+        <input type="search" id="search" class="form-control rounded" placeholder="Search" aria-label="Search" aria-describedby="search-addon">
+        <span class="input-group-text border-0 bg-transparent cursor-pointer" id="search-addon">
+            <i class="fas fa-search" role="button" id="search_button"></i>
+        </span>
+    </div>
 </div>
 
-<div>
-    <label for="sort-books">Sort books by:</label>
-    <select name="sort-books-select" id="sort-books-select" onchange="refreshBookSorted()">
-        <option value="title">Title</option>
-        <option value="authors">Authors</option>
-        <option value="rating">Rating</option>
-        <option value="favorites_count">Favorites count</option>
-    </select>
+<div class="d-flex align-items-center justify-content-center mb-3">
+    <div class="form-floating pe-2 w-auto">
+        <select class="form-select form-select-sm" aria-label="Sort catalog option" name="sort-books-select" id="sort-books-select" onchange="refreshBookSorted()">
+            <option value="title">Title</option>
+            <option value="authors">Authors</option>
+            <option value="rating">Rating</option>
+            <option value="favorites_count">Favorites count</option>
+        </select>
+        <label for="sort-books-select">Sort books by:</label>
+    </div>
 </div>
 
-<div>
+<div class="d-flex align-items-center justify-content-center">
 <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#add-book-modal" onclick="setAddBookModal()">Add Book</button>
 </div>
 
@@ -131,7 +141,6 @@
         document.getElementById("form").reset()
 
         document.getElementById("modal-title-label").innerHTML = "Add New Book";
-        //document.getElementById("button_add").innerHTML = "Add Book";
         document.getElementById("button_add").onclick = addBook;
     }
 
@@ -315,7 +324,7 @@
         books.forEach((item) => {
             let authors = item.fields.authors.replaceAll(";", ", ")
 
-            htmlString += `\n<div id="book-container-${item.pk}" class="border border-3 mt-5 mb-5 p-5">
+            htmlString += `\n<div id="book-container-${item.pk}" class="border border-3 rounded-3 mt-5 mb-5 p-5">
             <div class="book">
                 <div class="book-content">
                     <div class="mb-3">
@@ -350,7 +359,8 @@
                         <div id="overall_rating-${item.pk}"><p>${item.fields.overall_rating}/5</p></div>
                     </div>
                     <div class="mb-3">
-                        <div id="favorite_count-${item.pk}"><p>${item.fields.favorites_count} people added this book to their favorite.</p></div>
+                        <div class="mb-1">Favorites count:</div>
+                        <div id="favorite_count-${item.pk}"><p>${item.fields.favorites_count}</p></div>
                     </div>
                     <div class="mb-3">
                         <div class="mb-1">Description:</div><br>
