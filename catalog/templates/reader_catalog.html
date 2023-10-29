@@ -24,6 +24,14 @@
 </div>
 
 <div>
+    <label>Filter books by:</label>
+    <select name="sort-books-select" id="filter-books-select" onchange="refreshBookSorted()">
+        <option value="all">All</option>
+        <option value="in_personal_library">In Personal Library</option>
+    </select>
+</div>
+
+<div>
     <label>Display:</label>
     <select name="display-books-select" id="display-books-select" onchange="refreshBookSorted()">
         <option value="grid">Grid</option>
@@ -38,15 +46,29 @@
         return fetch("{% url 'catalog:get_book_json' %}").then((res) => res.json())
     }
 
+    async function getRelatedBooks() {
+        return fetch("{% url 'catalog:get_related_books' %}").then((res) => res.json())
+    }
+
     //--------------------------------------------------------------------------------------------
 
-    async function sortBooks(byKey){
-        let sortedBooks;
+    async function sortAndFilterBooks(byKey, byStatus){
+        let sortedAndFilteredBooks;
 
         var books = await getBooks();
+        var relatedBooks = await getRelatedBooks()
 
+        //filter books
+        if(byStatus == 'all'){
+            sortedAndFilteredBooks = books;
+        }
+        else if(byStatus == 'in_personal_library'){
+            sortedAndFilteredBooks = relatedBooks;
+        }
+
+        //sort books
         if(byKey == 'title'){
-            sortedBooks = books.sort(function(a,b){
+            sortedAndFilteredBooks = sortedAndFilteredBooks.sort(function(a,b){
                     let x = a.fields.title.toLowerCase();
                     let y = b.fields.title.toLowerCase();
 
@@ -57,7 +79,7 @@
                     });
         }
         else if(byKey == 'authors'){
-            sortedBooks = books.sort(function(a,b){
+            sortedAndFilteredBooks = sortedAndFilteredBooks.sort(function(a,b){
                     let x = a.fields.authors.toLowerCase();
                     let y = b.fields.authors.toLowerCase();
 
@@ -68,17 +90,19 @@
                 });
             }
         else if(byKey == 'rating'){
-            sortedBooks = books.sort(function(a,b){
+            sortedAndFilteredBooks = sortedAndFilteredBooks.sort(function(a,b){
                 return a.fields.overall_rating - b.fields.overall_rating;
             });
         }
         else if(byKey == 'favorites_count'){
-            sortedBooks = books.sort(function(a,b){
+            sortedAndFilteredBooks = sortedAndFilteredBooks.sort(function(a,b){
                 return a.fields.favorites_count - b.fields.favorites_count;
             });
         }
+
+        //filter books
         
-        return sortedBooks;
+        return sortedAndFilteredBooks;
     }
 
     async function refreshBookSorted(){
@@ -86,8 +110,9 @@
         document.getElementById("total-books").innerHTML = ""
 
         const sortBy = document.querySelector('#sort-books-select').value;
+        const filterBy = document.querySelector('#filter-books-select').value;
         const displayBy = document.querySelector('#display-books-select').value;
-        const books = await sortBooks(sortBy);
+        const books = await sortAndFilterBooks(sortBy, filterBy);
         const books_count = books.length;
         let htmlString = ``
 

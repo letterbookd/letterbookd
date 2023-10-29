@@ -38,6 +38,12 @@ def show_librarian_catalog(request):
     }
     return render(request, "librarian_catalog.html", context)
 
+def get_related_books(request):
+    library_items = get_object_or_404(Library, reader__user=request.user).mybooks.all()
+    book_items = Book.objects.filter(librarybook__in=library_items)
+
+    return HttpResponse(serializers.serialize('json', book_items))
+
 #====================================================================================
 @login_required(login_url='/login')
 def show_reader_catalog(request):

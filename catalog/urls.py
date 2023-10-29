@@ -14,4 +14,5 @@ urlpatterns = [
     path('edit-book/<int:id>/', edit_book_ajax, name='edit_book_ajax'),
     path('delete-book/<int:id>/', delete_book_ajax, name='delete_book_ajax'),
     path('get-favorited-library-book/<int:id>', get_favorited_library_book, name='get_favorited_library_book'),
+    path('get-related-books/', get_related_books, name='get_related_books'),
 ]
