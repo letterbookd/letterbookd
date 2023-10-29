@@ -49,6 +49,14 @@ async function applySortAndFilters() {
         sortedJson = sortedJson.filter(obj => obj["library_data"].is_favorited == true);
     } else if (filterOption === 'finished') {
         sortedJson = sortedJson.filter(obj => obj["library_data"].tracking_status == 1);
+    } else if (filterOption === 'reading') {
+        sortedJson = sortedJson.filter(obj => obj["library_data"].tracking_status == 2);
+    } else if (filterOption === 'on_hold') {
+        sortedJson = sortedJson.filter(obj => obj["library_data"].tracking_status == 3);
+    } else if (filterOption === 'planning') {
+        sortedJson = sortedJson.filter(obj => obj["library_data"].tracking_status == 4);
+    } else if (filterOption === 'dropped') {
+        sortedJson = sortedJson.filter(obj => obj["library_data"].tracking_status == 5);
     } else if (filterOption === 'reviewed') {
         sortedJson = sortedJson.filter(obj => obj["library_data"].is_reviewed == true);
     }
