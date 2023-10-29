@@ -120,3 +120,5 @@ def like_thread(request, thread_id):
     likes_count = thread.like_set.count()
 
     return JsonResponse({'liked': liked_status, 'likes_count': likes_count})
+
+

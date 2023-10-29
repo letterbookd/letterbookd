@@ -65,3 +65,6 @@ def user_logout(request):
     logout(request)
     response = HttpResponseRedirect(reverse('guest:landing_page'))
     return response
+
+
+

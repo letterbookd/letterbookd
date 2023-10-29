@@ -6,10 +6,10 @@ from catalog.models import Book
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponseNotFound
 from django.core import serializers
 from django.urls import reverse
-
+from django.shortcuts import redirect   
 from django.contrib.auth.decorators import login_required #agar pengguna harus login sebelum mengakses suatu web
 from django.views.decorators.csrf import csrf_exempt
-
+from django.http import JsonResponse
 
 # Create your views here.
 def show_reviews(request, book_id):
