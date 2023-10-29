@@ -1,17 +1,30 @@
-from django.shortcuts import render
-
+from django.shortcuts import render, redirect
 from review.models import Review
+
 from library.models import Library 
 from catalog.models import Book
-from django.http import HttpResponse, HttpResponseRedirect, HttpResponseNotFound
-from django.core import serializers
-from django.urls import reverse
 
-from django.contrib.auth.decorators import login_required #agar pengguna harus login sebelum mengakses suatu web
+from django.http import HttpResponse, HttpResponseRedirect, HttpResponseNotFound, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
 
+from django.core import serializers
+from django.urls import reverse
+from review.forms import ReviewForm
+
+from django.contrib.auth.decorators import login_required #agar pengguna harus login sebelum mengakses suatu web
+
 # Create your views here.
+def show_all_reviews(request):
+    # Mengambil semua ulasan dan mengurutkannya berdasarkan tanggal posting dalam urutan menurun (terbaru ke terlama).
+    reviews = Review.objects.all().order_by('-date_posted')
+
+    context = {
+        'reviews': reviews,
+        'page_title': 'All Reviews',
+    }
+    return render(request, "review_list.html", context)
+
 def show_reviews(request, book_id):
     # TODO: render semua review dari buku
     catalog_book = Book.objects.get(id=book_id)
@@ -19,7 +32,7 @@ def show_reviews(request, book_id):
     # Mengambil review dari buku yang sesuai
     reviews = Review.objects.filter(book_id=book_id)
 
-    return render(request, 'review_list.html', {'book_title': book_title, 'reviews': reviews})
+    return render(request, 'book_detail.html', {'book_title': book_title, 'reviews': reviews})
 
 def get_all_user_reviews(request):
     # TODO: mengembalikan json isinya semua review milik Reader
@@ -32,7 +45,7 @@ def get_user_review(request, book_id):
     return HttpResponse(serializers.serialize('json', certain_review))
 
 @csrf_exempt
-def create_review(request, book_id):
+def create_review_ajax(request, book_id):
     if request.method == 'POST':
         user = request.user
         stars_rating = request.POST.get("stars_rating")
@@ -44,8 +57,21 @@ def create_review(request, book_id):
 
         new_review = Review.objects.create(user=user, stars_rating=stars_rating, status_on_review=status_on_review, review_text=review_text, book_id=book_id)
         new_review.save()
-        return HttpResponse(b"CREATED", status=201)
+
+        # Membuat respons JSON yang berisi data review dan status_on_review
+        response_data = {
+            'review_id': new_review.id,
+            'user': new_review.user.username,
+            'stars_rating': new_review.stars_rating,
+            'status_on_review': new_review.status_on_review,
+            'review_text': new_review.review_text,
+            'book_id': new_review.book_id,
+            'success': True
+        }
+
+        return JsonResponse(response_data, status=201)
     return HttpResponseNotFound()
+
 
 def edit_review(request, review_id):
     # TODO: edit reviewnya (ajax)

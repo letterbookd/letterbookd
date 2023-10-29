@@ -1,106 +1,111 @@
 {% extends 'base.html' %}
 
 {% block content %}
-  <h1>{{ edit_mode ? "Edit Review for " : "Create a Review for " }}{{ book_title }}</h1>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ edit_mode ? "Edit Review" : "Create Review" }}</title>
+    <!-- Include jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Include Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.2/css/all.min.css">
+</head>
+<body>
+    <h1>{{ edit_mode ? "Edit Review for " : "Create a Review for " }}{{ book_title }}</h1>
 
+    <a href="{% url 'review:show_reviews' book_id=book_id %}">Back to Book Details</a>
 
-  <!-- Form untuk input review -->
-  <form id="review-form">
-    {% csrf_token %}
-    <label for="review">Write your review:</label>
-    <textarea name="review" rows="4" cols="50" required></textarea>
+    <form id="review-form">
+        {% csrf_token %}
+        <label for="stars_rating">Rating:</label>
+        <select name="stars_rating" required>
+            <option value="0">0</option>
+            <option value="0.5">0.5</option>
+            <option value="1">1</option>
+            <option value="1.5">1.5</option>
+            <option value="2">2</option>
+            <option value="2.5">2.5</option>
+            <option value="3">3</option>
+            <option value="3.5">3.5</option>
+            <option value="4">4</option>
+            <option value="4.5">4.5</option>
+            <option value="5">5</option>
+        </select>
+        
+        <label for="status_on_review">Status on Review:</label>
+        <select name="status_on_review" required>
+            <!-- Isi ini dengan data yang akan diambil melalui AJAX -->
+        </select>
+        
+        <label for="review_text">Review Text:</label>
+        <textarea name="review_text" rows="4" cols="50" required>{{ review.review_text }}</textarea>
+        
+        <button type="submit">{{ edit_mode ? "Edit Review" : "Submit Review" }}</button>
+    </form>
 
-    <label for="stars_rating">Rating:</label>
-    <input type="number" step="0.5" name="stars_rating" min="0" max="5" required>
+    <!-- Container untuk menampilkan gambar bintang -->
+    <div id="star-container">
+        <i class="fas fa-star"></i>
+        <i class="fas fa-star"></i>
+        <i class="fas fa-star"></i>
+        <i class="fas fa-star"></i>
+        <i class="fas fa-star"></i>
+    </div>
 
-    <label for="status_on_review">Status:</label>
-    <p>{{ library.status_tracking }}</p>    
+    <script>
+        $(document).ready(function() {
+            var editMode = "{{ edit_mode|lower }}";
+            
+            // Ketika pilihan rating berubah
+            $("select[name='stars_rating']").change(function() {
+                var selectedRating = parseFloat($(this).val);
+                var starContainer = $("#star-container");
 
-    <button type="submit">Submit Review</button>
-  </form>
-  
-  <form id="review-form">
-    {% csrf_token %}
-    <label for="review">Write your review:</label>
-    <textarea name="review" rows="4" cols="50" required>{{ review.review_text }}</textarea>
+                // Menghapus bintang sebelumnya
+                starContainer.empty();
 
-    <label for="stars_rating">Rating:</label>
-    <input type="number" step="0.5" name="stars_rating" min="0" max="5" required value="{{ review.stars_rating }}">
+                // Menambahkan bintang sesuai dengan rating yang dipilih oleh pengguna
+                for (var i = 1; i <= 5; i++) {
+                    if (i <= selectedRating) {
+                        // Menampilkan bintang penuh
+                        starContainer.append('<i class="fas fa-star"></i>');
+                    } else if (i - 0.5 <= selectedRating) {
+                        // Menampilkan bintang setengah
+                        starContainer.append('<i class="fas fa-star-half-alt"></i>');
+                    } else {
+                        // Menampilkan bintang kosong
+                        starContainer.append('<i class="far fa-star"></i>');
+                    }
+                }
+            });
 
-    <label for="status_on_review">Status:</label>
-    <select name="status_on_review" required>
-        <option value="FINISHED" {% if review.status_on_review == "FINISHED" %}selected{% endif %}>FINISHED</option>
-        <option value="READING" {% if review.status_on_review == "READING" %}selected{% endif %}>READING</option>
-        <option value="ON HOLD" {% if review.status_on_review == "ON HOLD" %}selected{% endif %}>ON HOLD</option>
-        <option value="PLANNED" {% if review.status_on_review == "PLANNED" %}selected{% endif %}>PLANNED</option>
-        <option value="DROPPED" {% if review.status_on_review == "DROPPED" %}selected{% endif %}>DROPPED</option>
-        <option value="UNTRACKED" {% if review.status_on_review == "UNTRACKED" %}selected{% endif %}>UNTRACKED</option>
-    </select>
+            // Ambil data status_on_review melalui AJAX
+            if (!editMode) {
+                $.ajax({
+                    url: "{% url 'review:create_review_ajax' book_id=book_id %}",
+                    method: 'GET',
+                    success: function(response) {
+                        var statusOnReview = response.status_on_review;
 
-    <button type="submit">{{ edit_mode ? "Edit Review" : "Submit Review" }}</button>
-  </form>
-
-  <script>
-    // Fungsi untuk mengambil dan mengisi dropdown status_on_review
-    $.ajax({
-    url: "{% url 'review:create_review' %}",
-    method: 'POST',
-    data: {
-        review: $("textarea[name='review_text']").val(),
-        stars_rating: $("input[name='stars_rating']").val(),
-        status_on_review: library.status_tracking
-    },
-    success: function(response) {
-        // Tutup form setelah berhasil mengirim review
-        $("#review-form").hide();
-
-        // Tampilkan pesan sukses atau lakukan tindakan lain sesuai kebutuhan
-        alert("Review berhasil dibuat!");
-
-        // Kemudian, Anda dapat memperbarui daftar ulasan atau melakukan tindakan lain yang diperlukan
-        updateReviewList();
-    },
-    error: function(error) {
-        // Handle kesalahan, tampilkan pesan kesalahan jika perlu
-        alert("Terjadi kesalahan saat membuat review.");
-    }
-    });
-
-    $("#review-form").submit(function(e) {
-        e.preventDefault();
-        $.ajax({
-            url: "{% url 'review:edit_review' %}", // Ganti dengan URL yang sesuai
-            method: 'POST',
-            data: {
-                review_text: $("textarea[name='review']").val(),
-                stars_rating: $("input[name='stars_rating']").val(),
-                status_on_review: $("select[name='status_on_review']").val()
-            },
-            success: function(response) {
-                // Tutup form setelah berhasil mengirim perubahan review
-                $("#review-form").hide();
-
-                // Tampilkan pesan sukses atau lakukan tindakan lain sesuai kebutuhan
-                alert("Review berhasil diedit!");
-
-                // Kemudian, Anda dapat memperbarui daftar ulasan atau melakukan tindakan lain yang diperlukan
-                updateReviewList();
-            },
-            error: function(error) {
-                // Handle kesalahan, tampilkan pesan kesalahan jika perlu
-                alert("Terjadi kesalahan saat mengedit review.");
+                        // Isi pilihan dropdown dengan statusOnReview yang diambil
+                        $("select[name='status_on_review']").val(statusOnReview);
+                    },
+                    error: function(error) {
+                        console.error("Terjadi kesalahan saat mengambil data status_on_review.");
+                    }
+                });
             }
+
+            // Star rating
+            $("#star-rating").rating({
+                'size': 'xs',
+                'showClear': false,
+                'showCaption': false,
+                'step': 0.5
+            });
         });
-    });
+    </script>
+</body>
+</html>
 
-    $("#star-rating").rating({
-        'size':'xs',
-        'showClear': false,
-        'showCaption': false,
-        'step': 0.5
-    });
-
-
-  </script>
-  
 {% endblock %}

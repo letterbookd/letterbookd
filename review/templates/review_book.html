@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Review List</title>
+    <!-- Include jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Include Star Rating Plugin -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.2/css/all.min.css">    
+
+    <style>
+        .review-box {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin: 10px 0;
+            background-color: #f9f9f9;
+        }
+    
+        .review-box h3 {
+            margin: 0;
+        }
+    
+        .review-box p {
+            margin: 5px 0;
+        }
+    </style>
+    
+</head>
+<body>
+    <h1>Review for Book: {{ book_title }}</h1>
+
+    <a href="{% url 'show_reviews' book_id=book.id %}">Back to Book Details</a>
+
+    <!-- Daftar review -->
+    <div id="review-list">
+        {% for review in reviews %}
+        <div class="review-box">
+            <h3>{{ review.user }}</h3>
+            <p>{{ review.review_text }}</p>
+            <div class="star-rating">
+                {% for i in "0 0.5 1 1.5 2 2.5 3 3.5 4 4.5 5" %}
+                    {% if i <= review.stars_rating %}
+                        <i class="fas fa-star"></i>
+                    {% else %}
+                        <i class="far fa-star"></i>
+                    {% endif %}
+                {% endfor %}
+            </div> 
+            <p>Rating: {{ review.stars_rating }}</p>
+            <p>Date: {{ review.date_posted }}</p>
+        </div>
+        {% endfor %}
+    </div>
+    
+</body>
+</html>
+
+{% endblock %}
