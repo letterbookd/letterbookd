@@ -11,7 +11,7 @@ from django.http import JsonResponse
 @login_required(login_url='/login')
 def thread_list(request):
     threads = Thread.objects.annotate(likes=Count('like', distinct=True)).annotate(rep=Count('replies')).order_by('-created_at')
-    return render(request, 'forum.html', {'threads': threads})
+    return render(request, 'forum.html', {'page_title': 'Forum', 'threads': threads})
 
 
 @login_required(login_url='/login')
@@ -41,7 +41,7 @@ def create_thread(request):
     else:
         form = ThreadForm()
 
-    return render(request, 'create_thread.html', {'form': form})
+    return render(request, 'create_thread.html', {'page_title': 'Create Thread', 'form': form})
 
 
 @login_required(login_url='/login')
@@ -51,7 +51,7 @@ def view_thread(request, thread_id):
     likes = Like.objects.filter(thread=thread).all()
     form = RepliesForm(request.POST, error_class=DivErrorList)
     user_liked = Like.objects.filter(thread=thread, created_by=request.user).exists()
-    return render(request, 'view_thread.html', {'thread': thread, 'form': form, 'replies': replies, 'likes': likes, 'liked': user_liked})
+    return render(request, 'view_thread.html', {'page_title': thread.title + " - Forum", 'thread': thread, 'form': form, 'replies': replies, 'likes': likes, 'liked': user_liked})
 
 
 @login_required(login_url='/login')
@@ -80,7 +80,7 @@ def edit_thread(request, thread_id):
                 return redirect('/forum', thread_id=thread.id)
         else:
             form = ThreadForm(instance=thread)
-        return render(request, 'edit_thread.html', {'form': form})
+        return render(request, 'edit_thread.html', {'page_title': 'Edit Thread', 'form': form})
     else:
         return redirect('/forum', thread_id=thread.id)
     

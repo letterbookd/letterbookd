@@ -10,12 +10,12 @@ from django.views.decorators.csrf import csrf_exempt
 # Menampilkan halaman profile Reader
 def show_profile(request, id):
     reader = get_object_or_404(Reader, user__id=id)
-    return render(request, 'profile.html', {'reader': reader, 'page_title': 'Profile'})
+    return render(request, 'profile.html', {'reader': reader, 'page_title': f"{reader.display_name}'s Profile"})
 
 # Mengembalikan halaman hasil searching Reader dengan display_name
 def search_reader(request, display_name):
     readers = Reader.objects.filter(display_name__icontains=display_name)
-    return render(request, 'user_search_results.html', {'readers': readers})
+    return render(request, 'user_search_results.html', {'readers': readers, 'page_title': "Reader Search"})
 
 # Mengedit profil (display_name dan bio) user dari halaman profilenya
 def edit_profile(request, user_id):
@@ -38,7 +38,8 @@ def user_settings(request):
 
     context = {
         'reader_form': reader_form,
-        'preferences_form': preferences_form
+        'preferences_form': preferences_form,
+        'page_title': "Settings"
     }
     
     return render(request, 'user_settings.html', context)
@@ -63,13 +64,13 @@ def apply_settings(request):
 def search_catalog(request):
     query = request.GET.get('q')
     results = Book.objects.filter(title__icontains=query)
-    return render(request, 'book_search_results.html', {'results': results})
+    return render(request, 'book_search_results.html', {'results': results, 'page_title': "Catalog Search"})
 
 # Menampilkan hasil searching buku untuk suatu reader di library
 def search_library(request):
     query = request.GET.get('q')
     user_books = LibraryBook.objects.filter(user=request.user, book__title__icontains=query)
-    return render(request, 'book_search_results.html', {'results': user_books})
+    return render(request, 'book_search_results.html', {'results': user_books, 'page_title': "Library Search"})
 
 # Mengembalikan data akun Reader untuk digunakan dalam bentuk JSON
 def get_reader_data_by_user(request, user_id):
