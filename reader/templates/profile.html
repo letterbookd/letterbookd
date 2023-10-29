@@ -1,0 +1,301 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+
+<style> 
+
+    .custom-profile-picture {
+        width: 100%;
+        max-width: 250px;
+        height: auto;
+    }
+    .profile-section {
+        margin-bottom: 2rem;
+    }
+
+    input[readonly] {
+        background-color: #e9ecef; 
+        color: #495057;           
+        cursor: not-allowed;    
+    }
+
+    .card {
+        border: 1px solid #e9ecef;
+        border-radius: 5px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        overflow: hidden;  
+    }
+
+    .btn {
+        transition: all 0.3s;
+    }
+
+    .btn:hover {
+        transform: scale(1.05);
+    }
+
+    .card-img-top {
+        display: block;
+        margin: auto;
+    }
+
+    .card-body {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center; 
+    }
+
+    .yellow-star {
+        color: rgb(198, 198, 0);
+    }
+
+    .card.review-card {
+        border: 1px solid #e9ecef;
+        border-radius: 5px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        padding: 20px; 
+    }
+
+    .yellow-star {
+        color: yellow;
+    }
+
+    .review-container p {
+        margin-bottom: 10px;  
+    }
+
+
+</style>
+
+<h1 class="my-4">Profile</h1>
+
+<div class="row">
+    <!-- Profile Picture Column -->
+    <div class="col-md-4 d-flex justify-content-center align-items-center">
+        <img src="/static/images/pfp_0.jpg" alt="profile picture" class="custom-profile-picture mb-4">
+    </div>
+
+    <!-- Profile Information Column -->
+    <div class="col-md-8">
+        <div class="row">
+            <div class="col-4">
+                <b>Username:</b>
+            </div>
+            <div class="col-8">
+                <p id="username">{{ reader.user }}</p>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-4">
+                <b>Display Name:</b>
+            </div>
+            <div class="col-8">
+                <p id="display_name">{{ reader.display_name }}</p>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-4">
+                <b>Bio:</b>
+            </div>
+            <div class="col-8">
+                <p id="bio">{{ reader.bio }}</p>
+            </div>
+        </div>
+        
+
+        <div class="row">
+            <div class="col-4">
+                <p><b>Share Reviews:</b></p>
+            </div>
+            <div class="col-8">
+                <p id="shareReviewStatus">{{ reader.preferences.share_reviews|yesno:"Sharing Reviews,Not Sharing Reviews" }}</p>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-4">
+                <p><b>Share Library:</b></p>
+            </div>
+            <div class="col-8">
+                <p id="shareLibraryStatus">{{ reader.preferences.share_library|yesno:"Sharing Library,Not Sharing Library" }}</p>
+            </div>
+        </div>
+
+        {% if reader.user == request.user %}
+            <div id="product_cards_container" class="profile-section">
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#edit-profile-modal">Edit Profile</button>
+                <div class="row row-cols-1 row-cols-md-3 g-4 mt-4" id="product_cards"></div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="container">
+    {% if reader.preferences.share_library %}
+        <div id="librarySection" class="profile-section mt-4">
+            <h2>Library</h2>
+            <div class="row">
+                {% for item in library_items %}
+                    <div class="col-md-2 mb-4">
+                    <!-- <div class="col-md-3 mb-4"> --> 
+                        <div class="card">
+                            <img src="{{ item.book.thumbnail }}" class="card-img-top" alt="Thumbnail for {{ item.book.title }}" style="max-height: 200px; max-width: 180px;">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ item.book.title }}</h5>
+                                <p class="card-text"><small class="text-muted">{{ item.book.authors }}</small></p>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
+    {% if reader.preferences.share_reviews %}
+        <div id="reviewSection" class="profile-section mt-4">
+            <h2>Review</h2>
+            <div class="row">
+                {% for review in reviews %} 
+                    <div class="col-md-4 mb-4">
+                        <div class="card review-card">
+                            <p><strong>Status:</strong> {{ review.status_on_review }}</p>
+                            <p>
+                                <strong>Rating:</strong> 
+                                <span class="yellow-star">★</span> {{ review.stars_rating }}
+                            </p>
+                            <p>
+                                <strong>Review:</strong> 
+                                {{ review.review_text }}
+                            </p>
+                            <p>
+                                <strong>Date Posted:</strong> 
+                                {{ review.date_posted|date:"F d, Y" }}
+                            </p>
+                        </div>                            
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
+</div>
+
+<!-- Modal Edit Profile -->
+<div class="modal fade" id="edit-profile-modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="modal-title-label">Edit Profile</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" id="form" onsubmit="return false;">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id ="button_close" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="button_save" data-bs-dismiss="modal">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="user-data" data-user-id="{{ request.user.id }}"></div>
+
+<script>
+
+    const userDataElement = document.getElementById("user-data");
+    const userId = userDataElement.getAttribute("data-user-id");
+
+
+    async function getReaders() {
+        return fetch("{% url 'reader:get_all_readers_json' %}").then((res) => res.json())
+    }
+
+
+    function editReaderModal(){
+        
+        function editHandle(){
+            editProfile(userId);
+        }
+
+        document.getElementById("button_save").onclick = editHandle;
+    }
+
+    async function editProfile(id){
+        let url = "{% url 'reader:edit_profile_ajax' '123' %}".replace('123', id);
+        
+
+        const response = await fetch(url, {
+            method: "POST",
+            body: new FormData(document.querySelector('#form'))
+        });
+
+        if(response.ok){
+            refreshProfile("{{ request.user.id }}");
+        }
+        else{
+            console.log(response)
+        }
+    }
+
+    function updateSectionsVisibility(data) {
+        if (data.share_reviews) {
+            $('#reviewSection').show();
+        } else {
+            $('#reviewSection').hide();
+        }
+        
+        if (data.share_library) {
+            $('#librarySection').show();
+        } else {
+            $('#librarySection').hide();
+        }
+    }
+
+
+    async function refreshProfile(id){
+        const readerDetailUrl = "{% url 'reader:show_json_by_id' id=request.user.id %}"; 
+        $.ajax({
+            url: readerDetailUrl,
+            success: function(response){
+                const data = response;
+                console.log(data)
+                $('#username').text(data.username);
+                $('input[name="username"]').val(data.username);
+                $('#display_name').text(data.display_name);
+                $('input[name="display_name"]').val(data.display_name);
+                $('#bio').text(data.bio);
+                $('textarea[id="bio"]').val(data.bio);
+                const srev = data.share_reviews ? "Sharing Reviews" : "Not Sharing Reviews";
+                const slib = data.share_library? "Sharing Library" : "Not Sharing Library";
+                $('#shareReviewStatus').text(srev);
+                $('#inputShareReviewPreference').attr('checked', data.share_reviews)
+                $('#shareLibraryStatus').text(slib);
+                $('#inputShareLibraryPreference').attr('checked', data.share_library);
+                updateSectionsVisibility(data);
+            },
+            error: function(error){
+                console.log("error: ", error) 
+            }
+        })
+    }
+
+
+    refreshProfile();
+
+
+    document.querySelector('[data-bs-target="#edit-profile-modal"]').addEventListener('click', editReaderModal);
+
+</script>
+
+{% endblock content %}

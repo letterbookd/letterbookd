@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<style>
+    .center-content {
+        display: flex;          
+        justify-content: center; 
+        align-items: center;     
+        flex-direction: column;  
+    }
+
+</style>
+
+<h1 class="mt-4 mb-4">Search Results</h1>
+
+<div class="container">
+    {% if readers.count > 0 %}
+        <div class="row">
+        {% for reader in readers %}
+            <div class="col-md-4 mb-4 reader-container">
+                <div class="card"> 
+                    <div class="card-body center-content">
+                        <img src="/static/images/pfp_0.jpg" alt="Profile Photo" class="rounded-circle mb-3" style="max-width: 100px;"> 
+                        <h5 class="card-title">{{ reader.user }}</h5>
+                        <p class="card-text">{{ reader.display_name }}</p>
+                        <p class="card-text">{{ reader.bio }}</p>
+                        <!--
+                        <a href="{% url 'reader:show_profile' id=reader.user.id %}" class="btn btn-primary mb-4">View Profile</a>
+                        -->
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+        </div>
+    {% else %}
+        <p>No readers found with the name you searched for</p> 
+    {% endif %}
+</div>
+
+{% endblock content %}

@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block meta %}
+<style>
+    #library-books .book-card:not(.card) img {
+        cursor: pointer;
+    }
+</style>
+{% endblock meta %}
+
+{% block content %}
+    <h1>Hello, {{ display_name }}!</h1>
+    <p class="lead">Welcome back to your personal library</p>
+
+    <hr>
+    {% include 'library_sort_filter_widget.html' %} <!-- Widget for Sort and Filter -->
+
+    <div id="library-books" class="row row-cols-2 row-cols-lg-6 row-cols-md-6 row-cols-sm-4 g-col-6 m-4"></div>
+
+    <!-- MODAL -->
+    {% include 'library_update_book_modal.html' %}
+    {% include 'library_add_book_modal.html' %}
+
+{% endblock content %}
+
+{% block scripts %}
+<script>
+    const url_get_library = "{% url 'library:get_library' %}";
+    const url_add_book = "{% url 'library:add_book' %}";
+    const url_get_lib_book = "{% url 'library:get_lib_book' id=12345 %}";
+    const url_update_status = "{% url 'library:update_status' id=12345 %}";
+    const url_remove_book = "{% url 'library:remove_book' id=12345 %}";
+    const url_book_details = "{% url 'catalog:show_book_detail' id=12345 %}";
+    // const url_review_book = "url 'review:show_reviews' id=12345 %}";
+</script>
+<script type="text/javascript" src="{% static 'js/library_handler.js' %}"></script>
+{% endblock scripts %}
