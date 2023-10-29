@@ -68,7 +68,7 @@ def show_profile(request, id):
 # Mengembalikan halaman hasil searching Reader dengan display_name
 def search_reader(request, display_name):
     readers = Reader.objects.filter(display_name__icontains=display_name)
-    return render(request, 'user_search_results.html', {'readers': readers})
+    return render(request, 'user_search_results.html', {'readers': readers, 'page_title': "Reader Search"})
 
 # Mengedit profil (display_name dan bio) user dari halaman profilenya
 def edit_profile(request, user_id):

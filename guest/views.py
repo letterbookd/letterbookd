@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.http import HttpResponseRedirect, HttpResponse, HttpResponseNotFound
+from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
@@ -8,40 +8,45 @@ from django.contrib import messages
 
 from reader.models import *
 from library.models import Library
-from catalog.models import Librarian
 
 # Views for Guest
+def is_reader(user):
+    try:
+        Reader.objects.get(user=user)
+    except Reader.DoesNotExist:
+        return False
+    return True
+
 def show_landing(request):
     if request.user.is_authenticated:
-        return HttpResponseRedirect(reverse("library:show_library"))
+        if hasattr(request.user, "librarian"):
+            return redirect(reverse("catalog:show_librarian_catalog"))
+        elif is_reader(user=request.user):
+            print(request.user.reader_set)
+            return redirect(reverse("library:show_library"))
+    
     return render(request, 'main.html', context={})
 
 def user_login(request):
     if request.user.is_authenticated:
-        if(hasattr(request.user, "librarian")):
-            return redirect(reverse("catalog:show_librarian_catalog"))
-        else:
-            return redirect(reverse("library:show_library"))
-
+        return HttpResponseRedirect(reverse("guest:landing_page"))
+        
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
-            if(hasattr(request.user, "librarian")):
-                response = HttpResponseRedirect(reverse("catalog:show_librarian_catalog"))
-            else:
-                response = HttpResponseRedirect(reverse("library:show_library"))  ## TODO: ganti jadi library 
-            return response
+            reverse("guest:landing_page")
         else:
             messages.info(request, 'Incorrect username or password')
+
     context = {'page_title': "Sign in"}
     return render(request, 'login.html', context)
 
 def user_register(request):
     if request.user.is_authenticated:
-        return HttpResponseRedirect(reverse("library:show_library"))
+        return HttpResponseRedirect(reverse("guest:landing_page"))
     
     if request.method == "POST":
         form = UserCreationForm(request.POST)
@@ -60,7 +65,7 @@ def user_register(request):
             reader.preferences.save()
             reader.save()
 
-            response = HttpResponseRedirect(reverse("library:show_library"))
+            response = HttpResponseRedirect(reverse("guest:landing_page"))
             return response
     context = {'page_title': "Sign up"}
     return render(request, 'register.html', context)
