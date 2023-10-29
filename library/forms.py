@@ -13,10 +13,13 @@ class LibraryBookForm(ModelForm):
             "tracking_status": forms.Select(attrs={'class': 'form-select'}),
             "is_favorited": forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
-    
-    def validate_constraints(self, *args, **kwargs):
-        try:
-            self.instance.validate_constraints()
-        except ValidationError as e:
-            self._update_errors(e.message_dict)
 
+class UpdateLibBookForm(ModelForm):
+    class Meta:
+        model = LibraryBook
+        exclude = ['library', 'book']
+        fields = ["tracking_status", "is_favorited"]
+        widgets = {
+            "tracking_status": forms.Select(attrs={'class': 'form-select'}),
+            "is_favorited": forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
