@@ -4,76 +4,120 @@
 
 <style> 
     .custom-profile-picture {
-        width: 250px;
-        height: 250px;
+        width: 100%;
+        max-width: 250px;
+        height: auto;
     }
-
-    .custom-col {
-        height: 300px; 
+    .profile-section {
+        margin-bottom: 2rem;
     }
-
     input[readonly] {
         background-color: #e9ecef; 
         color: #495057;           
         cursor: not-allowed;    
     }
-
-
 </style>
 
-<!-- Content -->
-<h1>Profile</h1>
-<div class="content">
-    <div class="row">
+<h1 class="my-4">Profile</h1>
 
-        <div class="col d-flex justify-content-center align-items-center custom-col">
-            <img src="/static/images/pfp_0.jpg" alt="profile picture" class="custom-profile-picture">
+<div class="row">
+    <!-- Profile Picture Column -->
+    <div class="col-md-4 d-flex justify-content-center align-items-center">
+        <img src="/static/images/pfp_0.jpg" alt="profile picture" class="custom-profile-picture mb-4">
+    </div>
+
+    <!-- Profile Information Column -->
+    <div class="col-md-8">
+        <div class="row">
+            <div class="col-4">
+                <b>Username:</b>
+            </div>
+            <div class="col-8">
+                <p id="username">{{ reader.user }}</p>
+            </div>
         </div>
         
-        <div class="col">
-
-            <p><b>Username:</b></p>
-            <p id="username">{{ reader.user }}</p>
-
-            <p><b>Display Name:</b></p>
-            <p id="display_name">{{ reader.display_name }}</p>
-
-            <p><b>Bio:</b></p>
-            <p id="bio">{{ reader.bio }}</p>
-
-            <p><b>Share Reviews:</b></p>
-            <p id="shareReviewStatus">{{ reader.preferences.share_reviews|yesno:"Sharing Reviews,Not Sharing Reviews" }}</p>
-
-
-            <p><b>Share Library:</b></p>
-            <p id="shareLibraryStatus">{{ reader.preferences.share_library|yesno:"Sharing Library,Not Sharing Library" }}</p>
-
-            {% if reader.preferences.share_library %}
-                <div id="librarySection">
-                    <h2>My Library</h2>
-                    <ul>
-                    {% for item in library_items %}
-                        <li>
-                            <strong>Judul Buku:</strong> {{ item.book.title }}<br>
-                        </li>
-                    {% endfor %}
-                    </ul>
-                </div>
-            {% else %}
-                <div id="librarySection" style="display:none;">
-                    <h2>My Library</h2>
-                    <ul></ul>
-                </div>
-            {% endif %}
-            </ul>
-
-            {% if reader.user == request.user %}
-                <div class="rounded p-4 bg-transparent" id="product_cards_container">
-                    <button type="button" class="btn btn-primary mb-4" data-bs-toggle="modal" data-bs-target="#edit-profile-modal">Edit Profile</button>
-                    <div class="row row-cols-1 row-cols-md-3 g-4" id="product_cards"></div>
-                </div>
-            {% endif %}
+        <div class="row">
+            <div class="col-4">
+                <b>Display Name:</b>
+            </div>
+            <div class="col-8">
+                <p id="display_name">{{ reader.display_name }}</p>
+            </div>
         </div>
+        
+        <div class="row">
+            <div class="col-4">
+                <b>Bio:</b>
+            </div>
+            <div class="col-8">
+                <p id="bio">{{ reader.bio }}</p>
+            </div>
+        </div>
+        
+
+        <div class="row">
+            <div class="col-4">
+                <p><b>Share Reviews:</b></p>
+            </div>
+            <div class="col-8">
+                <p id="shareReviewStatus">{{ reader.preferences.share_reviews|yesno:"Sharing Reviews,Not Sharing Reviews" }}</p>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-4">
+                <p><b>Share Library:</b></p>
+            </div>
+            <div class="col-8">
+                <p id="shareLibraryStatus">{{ reader.preferences.share_library|yesno:"Sharing Library,Not Sharing Library" }}</p>
+            </div>
+        </div>
+
+        {% if reader.preferences.share_library %}
+            <div id="librarySection" class="profile-section mt-4">
+                <h2>My Library</h2>
+                <div class="row">
+                    {% for item in library_items %}
+                        <div class="col-md-4 mb-4">
+                            <div class="card">
+                                <img src="{{ item.book.thumbnail }}" class="card-img-top" alt="Thumbnail for {{ item.book.title }}" style="max-height: 250px; width: auto;">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ item.book.title }}</h5>
+                                    <p class="card-text"><small class="text-muted">{{ item.book.authors }}</small></p>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+
+        {% if reader.preferences.share_reviews %}
+            <div id="reviewSection" class="profile-section mt-4">
+                <h2>My Review</h2>
+                <div class="row">
+                    {% for review in reviews %} 
+                        <div class="col-md-4 mb-4">
+                            <div class="card">
+                                <p>{{ review.status_on_review }}</p>
+                                <p>{{ review.stars_rating }}</p>
+                                <p>{{ review.review_text }}</p>
+                                <p>{{ review.date_posted|date:"F d, Y" }}</p>
+                            </div>                            
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+
+
+        {% if reader.user == request.user %}
+            <div id="product_cards_container" class="profile-section">
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#edit-profile-modal">Edit Profile</button>
+                <div class="row row-cols-1 row-cols-md-3 g-4 mt-4" id="product_cards"></div>
+            </div>
+        {% endif %}
     </div>
 </div>
 
@@ -138,6 +182,21 @@
         }
     }
 
+    function updateSectionsVisibility(data) {
+        if (data.share_reviews) {
+            $('#reviewSection').show();
+        } else {
+            $('#reviewSection').hide();
+        }
+        
+        if (data.share_library) {
+            $('#librarySection').show();
+        } else {
+            $('#librarySection').hide();
+        }
+    }
+
+
     async function refreshProfile(id){
         const readerDetailUrl = "{% url 'reader:show_json_by_id' id=request.user.id %}"; 
         $.ajax({
@@ -156,7 +215,8 @@
                 $('#shareReviewStatus').text(srev);
                 $('#inputShareReviewPreference').attr('checked', data.share_reviews)
                 $('#shareLibraryStatus').text(slib);
-                $('#inputShareLibraryPreference').attr('checked', data.share_library)
+                $('#inputShareLibraryPreference').attr('checked', data.share_library);
+                updateSectionsVisibility(data);
             },
             error: function(error){
                 console.log("error: ", error) 

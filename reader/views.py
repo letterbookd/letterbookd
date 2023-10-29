@@ -1,5 +1,7 @@
 from django.http import HttpResponse, HttpResponseNotFound, JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
+
+from review.models import Review
 from .models import Reader, ReaderPreferences
 from .forms import ReaderForm, ReaderPreferencesForm, UserProfileForm
 from django.contrib.auth.models import User
@@ -42,11 +44,11 @@ def show_profile(request, id):
     # Dapatkan objek reader
     reader = get_object_or_404(Reader, user__id=id)
 
-    # Dapatkan 3 buku di library pengguna
-    #library_items = get_object_or_404(Library, reader__user=request.user).mybooks.order_by('-id')[:3].all()
-    #library_items = reader.library.mybooks.order_by('-id')[:3].all()
-    library_items = get_object_or_404(Library, reader__user__id=id).mybooks.order_by('-id')[:3].all()
+    # Dapatkan semua buku di library pengguna
+    library_items = get_object_or_404(Library, reader__user__id=id).mybooks.order_by('-id').all()
 
+    # Dapatkan semua review yang ditulis pengguna
+    reviews = Review.objects.filter(user=reader)
 
     form = UserProfileForm()
 
@@ -55,9 +57,11 @@ def show_profile(request, id):
         'page_title': "Profile",
         'library_items': library_items,
         'form': form,
+        'reviews': reviews, 
     }
 
     return render(request, 'profile.html', context)
+
 
 
 
