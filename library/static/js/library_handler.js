@@ -360,7 +360,7 @@ async function updateDetailModal(id) {
     titleLabel.textContent = item_data["book_data"].title;
     authorLabel.textContent = "by " + item_data["book_data"].authors;
     bookLink.setAttribute('href', url_book_details.replace(/12345/, item_data["book_data"].id));
-    reviewLink.setAttribute('href', '#'); // url_review_book.replace(/12345/, item_data["book_data"].id)
+    reviewLink.setAttribute('href', url_review_book.replace(/12345/, item_data["book_data"].id)); // url_review_book.replace(/12345/, item_data["book_data"].id)
     form_trackingStatus.value = (item_data["library_data"].tracking_status == 0) ? 1 : item_data["library_data"].tracking_status
     form_isFavorited.checked = item_data["library_data"].is_favorited
     

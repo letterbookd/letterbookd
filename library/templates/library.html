@@ -31,7 +31,7 @@
     const url_update_status = "{% url 'library:update_status' id=12345 %}";
     const url_remove_book = "{% url 'library:remove_book' id=12345 %}";
     const url_book_details = "{% url 'catalog:show_book_detail' id=12345 %}";
-    // const url_review_book = "url 'review:show_reviews' id=12345 %}";
+    const url_review_book = "{% url 'review:show_reviews' book_id=12345 %}";
 </script>
 <script type="text/javascript" src="{% static 'js/library_handler.js' %}"></script>
 {% endblock scripts %}
