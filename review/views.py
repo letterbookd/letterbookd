@@ -14,7 +14,7 @@ from django.http import JsonResponse
 def show_reviews(request, book_id):
     # TODO: render semua review dari buku
     reviews = Review.objects.filter (book_id = book_id)
-    return render (request, 'review.html', {'reviews': reviews})
+    return render (request, 'review.html', {'reviews': reviews, 'page_title': reviews.first().book.title + " - Review"})
 
 def get_all_user_reviews(request):
     # TODO: mengembalikan json isinya semua review milik Reader

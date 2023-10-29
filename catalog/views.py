@@ -35,7 +35,7 @@ def show_librarian_catalog(request):
     context = {
         'books': books,
         'form': form,
-        'page_title':'LibrarianCatalog',
+        'page_title':'Librarian Catalog',
     }
     return render(request, "librarian_catalog.html", context)
 
@@ -54,7 +54,7 @@ def show_reader_catalog(request):
 
     context = {
         'books': books,
-        'page_title':'ReaderCatalog',
+        'page_title':'Catalog',
     }
     return render(request, "reader_catalog.html", context)
 
@@ -67,7 +67,7 @@ def show_book_detail(request,id):
     context = {
         'book': book,
         'authors': book.authors.replace(";", ", "),
-        'page_title':'BookDetail',
+        'page_title': book.title + " - Catalog",
     }
 
     return render(request, "book_detail.html", context)
