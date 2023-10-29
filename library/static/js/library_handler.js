@@ -1,6 +1,3 @@
-const detailModal = document.getElementById("detail-modal");
-var detailModalChanged = false;
-
 var sortOption = 'alphabetical'
 var filterOption = 'all'
 var layoutOption = 'grid'
@@ -52,6 +49,14 @@ async function applySortAndFilters() {
         sortedJson = sortedJson.filter(obj => obj["library_data"].is_favorited == true);
     } else if (filterOption === 'finished') {
         sortedJson = sortedJson.filter(obj => obj["library_data"].tracking_status == 1);
+    } else if (filterOption === 'reading') {
+        sortedJson = sortedJson.filter(obj => obj["library_data"].tracking_status == 2);
+    } else if (filterOption === 'on_hold') {
+        sortedJson = sortedJson.filter(obj => obj["library_data"].tracking_status == 3);
+    } else if (filterOption === 'planning') {
+        sortedJson = sortedJson.filter(obj => obj["library_data"].tracking_status == 4);
+    } else if (filterOption === 'dropped') {
+        sortedJson = sortedJson.filter(obj => obj["library_data"].tracking_status == 5);
     } else if (filterOption === 'reviewed') {
         sortedJson = sortedJson.filter(obj => obj["library_data"].is_reviewed == true);
     }
@@ -90,7 +95,7 @@ async function redrawLibrary() {
             htmlString += 
             `<div class="g-col">
                 <div class="book-card p-0 d-flex flex-column justify-content-center m-0 gap-2" data-lib-book-id=${book_data.id}>
-                    <img src=${book_data.thumbnail} class="img-fluid rounded border border-1 shadow-sm" alt="${book_data.title} by ${book_data.authors}" data-bs-toggle="modal" data-bs-target="#detail-modal">                     
+                    <img src=${book_data.thumbnail} class="img-fluid rounded border border-1 shadow-sm" alt="${book_data.title} by ${book_data.authors}" data-bs-toggle="modal" data-bs-target="#update-lib-book-modal">                     
                     <span class="text-center fst-italic">${book_data.title}</span>
                 </div>
             </div>
@@ -113,7 +118,7 @@ async function redrawLibrary() {
                                     </div>
                                 </div>
                                 <div>
-                                    <button type="button" class="btn detail-modal-trigger" data-bs-toggle="modal" data-bs-title="Open detail" data-bs-trigger="hover" data-bs-target="#detail-modal">
+                                    <button type="button" class="btn update-modal-trigger" data-bs-toggle="modal" data-bs-title="Open detail" data-bs-trigger="hover" data-bs-target="#update-lib-book-modal">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-three-dots-vertical" viewBox="0 0 16 16">
                                             <path d="M9.5 13a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
                                         </svg>
@@ -148,37 +153,19 @@ async function redrawLibrary() {
     await connectListeners();
 }
 
-async function updateDetailModal(id) {
-    const thumbnailImg = document.getElementById("detail-thumbnail")
-    const titleLabel = document.getElementById("detail-title-label")
-    const authorLabel = document.getElementById("detail-authors-label")
-    const bookLink = document.getElementById("detail-book-link")
-    const reviewLink = document.getElementById("detail-review-link")
-
-    const item_data = cachedLibrary.filter(obj => obj["book_data"].id == id)[0];
-
-    detailModal.setAttribute("data-lib-book-id", id)
-    thumbnailImg.src = item_data["book_data"].thumbnail;
-    thumbnailImg.alt = "Cover of " + item_data["book_data"].title + " by " + item_data["book_data"].authors;
-    titleLabel.textContent = item_data["book_data"].title;
-    authorLabel.textContent = "by " + item_data["book_data"].authors;
-    bookLink.setAttribute('href', url_book_details.replace(/12345/, item_data["book_data"].id));
-    reviewLink.setAttribute('href', 'url_review_book.replace(/12345/, item_data["book_data"].id)');
-}
-
 async function connectListeners() {
     if (layoutOption == 'grid') {
         document.querySelectorAll('#library-books img').forEach((element) => {
-            element.addEventListener("click", function(e){
-                updateDetailModal(element.closest(".book-card").getAttribute("data-lib-book-id"))
+            element.addEventListener("click", async function(e){
+                await updateDetailModal(element.closest(".book-card").getAttribute("data-lib-book-id"))
             })
         })
     } else if (layoutOption == 'list') {
         // connect buttons
-        document.querySelectorAll('#library-books .detail-modal-trigger').forEach((element) => {
+        document.querySelectorAll('#library-books .update-modal-trigger').forEach((element) => {
             new bootstrap.Tooltip(element);
-            element.addEventListener("click", function(e){
-                updateDetailModal(element.closest(".book-card").getAttribute("data-lib-book-id"))
+            element.addEventListener("click", async function(e){
+                await updateDetailModal(element.closest(".book-card").getAttribute("data-lib-book-id"))
             })
         })
     }
@@ -237,13 +224,38 @@ sortDirectionToggle.addEventListener('click', async () => {
 })
 
 // bind list/grid display toggle
+function updateDisplayToggleIcon() {
+    let grid_svg = ``;
+    if (layoutOption == 'grid') {
+        gridToggle.classList.add("active");
+        grid_svg = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-grid-3x2-gap-fill" viewBox="0 0 16 16">
+            <path d="M1 4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V4zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1V4zM1 9a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V9zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V9zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1V9z"/>
+        </svg>
+        `;
+    } else {
+        gridToggle.classList.remove("active");
+        grid_svg = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-grid-3x2" viewBox="0 0 16 16">
+            <path d="M0 3.5A1.5 1.5 0 0 1 1.5 2h13A1.5 1.5 0 0 1 16 3.5v8a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 0 11.5v-8zM1.5 3a.5.5 0 0 0-.5.5V7h4V3H1.5zM5 8H1v3.5a.5.5 0 0 0 .5.5H5V8zm1 0v4h4V8H6zm4-1V3H6v4h4zm1 1v4h3.5a.5.5 0 0 0 .5-.5V8h-4zm0-1h4V3.5a.5.5 0 0 0-.5-.5H11v4z"/>
+        </svg>
+        `;
+    }
+
+    if (layoutOption == 'list') {
+        listToggle.classList.add("active");
+    } else {
+        listToggle.classList.remove("active");
+    }
+
+    gridToggle.innerHTML = grid_svg;
+}
 let listToggle = document.getElementById('display-list-toggle')
 listToggle.addEventListener('click', async () => {
     if (layoutOption != 'list') {
         layoutOption = 'list'
         redrawLibrary();
-        updateGridToggleIcon();
-        updateListToggleIcon();
+        updateDisplayToggleIcon();
     }
 })
 let gridToggle = document.getElementById('display-grid-toggle')
@@ -251,38 +263,10 @@ gridToggle.addEventListener('click', async () => {
     if (layoutOption != 'grid') {
         layoutOption = 'grid'
         redrawLibrary()
-        updateGridToggleIcon();
-        updateListToggleIcon();
+        updateDisplayToggleIcon();
     }
 })
-
-function updateGridToggleIcon() {
-    let svg = ``;
-    if (layoutOption == 'grid') {
-        gridToggle.classList.add("active");
-        svg = `
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-grid-3x2-gap-fill" viewBox="0 0 16 16">
-            <path d="M1 4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V4zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1V4zM1 9a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V9zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V9zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1V9z"/>
-        </svg>
-        `;
-    } else {
-        gridToggle.classList.remove("active");
-        svg = `
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-grid-3x2" viewBox="0 0 16 16">
-            <path d="M0 3.5A1.5 1.5 0 0 1 1.5 2h13A1.5 1.5 0 0 1 16 3.5v8a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 0 11.5v-8zM1.5 3a.5.5 0 0 0-.5.5V7h4V3H1.5zM5 8H1v3.5a.5.5 0 0 0 .5.5H5V8zm1 0v4h4V8H6zm4-1V3H6v4h4zm1 1v4h3.5a.5.5 0 0 0 .5-.5V8h-4zm0-1h4V3.5a.5.5 0 0 0-.5-.5H11v4z"/>
-        </svg>
-        `;
-    }
-    gridToggle.innerHTML = svg;
-}
-function updateListToggleIcon() {
-    if (layoutOption == 'list') {
-        listToggle.classList.add("active");
-    } else {
-        listToggle.classList.remove("active");
-    }
-}
-updateGridToggleIcon();
+updateDisplayToggleIcon();
 
 // refresh library button
 document.getElementById('refresh-library').addEventListener('click', refreshLibrary)
@@ -293,24 +277,111 @@ tooltipelements.forEach((el) => {
     new bootstrap.Tooltip(el);
 });
 
-// modal stuff
-document.getElementById('tracking-status-selection').addEventListener('input', async () => {
-    detailModalChanged = true;
-    // change status it
-})
-document.getElementById('lib_button_remove').addEventListener('click', async () => {
-    detailModalChanged = true;
-    // remove it
-})
-document.getElementById('lib_button_fav').addEventListener('click', async () => {
-    detailModalChanged = true;
-    // favorite it
-})
-detailModal.addEventListener('hide.bs.modal', async function(e) {
-    // check if theres any change
-    if (detailModalChanged === true) {
-        await refreshLibrary();
+// add book modal
+const addLibBookModal = new bootstrap.Modal('#add-lib-book-modal')
+const addLibBookForm = document.getElementById("add-lib-book-form")
+addLibBookForm.addEventListener('submit', async (event) => {
+    event.preventDefault()
+    event.stopPropagation()
+    if (!addLibBookForm.checkValidity()) {
+        document.getElementById("book-already-exists").style.display = 'none';
+        document.getElementById("book-is-null").style.display = 'block';
+        return false;
     }
-    detailModalChanged = false;
-    console.log("boop")
+    document.getElementById("book-is-null").style.display = 'none';
+
+    document.getElementById("add-lib-book-submit").classList.add("disabled")
+    fetch(url_add_book, {
+        method: "POST",
+        body: new FormData(document.querySelector('#add-lib-book-form')),
+    }).then(async (response) => {
+        if (!response.ok) {
+            if (response.status == 409) {
+                document.getElementById("book-already-exists").style.display = 'block';
+            }
+            document.getElementById("add-lib-book-submit").classList.remove("disabled")
+        } else {
+            document.getElementById("book-already-exists").style.display = 'none';
+            refreshLibrary()
+            addLibBookModal.hide()
+        }
+    })
+    return false;
+})
+document.getElementById("add-lib-book-modal").addEventListener('hidden.bs.modal', async () => {
+    addLibBookForm.reset()
+    document.getElementById("book-already-exists").style.display = 'none';
+    document.getElementById("add-lib-book-submit").classList.remove("was-validated", "disabled")
+})
+
+// update book modal
+const updateLibBookBsModal = new bootstrap.Modal('#update-lib-book-modal');
+const updateLibBookModal = document.getElementById("update-lib-book-modal")
+const updateLibBookForm = document.getElementById("update-lib-book-form");
+updateLibBookForm.addEventListener('submit', async (event) => {
+    event.preventDefault()
+    event.stopPropagation()
+    document.getElementById("update-lib-book-submit").classList.add("disabled")
+
+    const updateBookUrl = url_update_status.replace(/12345/, updateLibBookModal.getAttribute("data-lib-book-id"));
+    console.log(updateBookUrl)
+    fetch(updateBookUrl, {
+        method: "POST",
+        body: new FormData(document.querySelector('#update-lib-book-form')),
+    }).then(async (response) => {
+        if (!response.ok) {
+            document.getElementById("update-lib-book-submit").classList.remove("disabled")
+        } else {
+            refreshLibrary()
+            updateLibBookBsModal.hide()
+        }
+    })
+    return false;
+})
+updateLibBookModal.addEventListener('hidden.bs.modal', async () => {
+    updateLibBookForm.reset()
+    document.getElementById("update-lib-book-submit").classList.remove("disabled")
+})
+
+async function updateDetailModal(id) {
+    const thumbnailImg = document.getElementById("detail-thumbnail")
+    const titleLabel = document.getElementById("detail-title-label")
+    const authorLabel = document.getElementById("detail-authors-label")
+    const bookLink = document.getElementById("detail-book-link")
+    const reviewLink = document.getElementById("detail-review-link")
+    const form_trackingStatus = document.getElementById('update_tracking_status')    
+    const form_isFavorited = document.getElementById('update_is_favorited')
+
+    const item_data = cachedLibrary.filter(obj => obj["book_data"].id == id)[0];
+
+    updateLibBookModal.setAttribute("data-lib-book-id", id)
+    thumbnailImg.src = item_data["book_data"].thumbnail;
+    thumbnailImg.alt = "Cover of " + item_data["book_data"].title + " by " + item_data["book_data"].authors;
+    titleLabel.textContent = item_data["book_data"].title;
+    authorLabel.textContent = "by " + item_data["book_data"].authors;
+    bookLink.setAttribute('href', url_book_details.replace(/12345/, item_data["book_data"].id));
+    reviewLink.setAttribute('href', '#'); // url_review_book.replace(/12345/, item_data["book_data"].id)
+    form_trackingStatus.value = (item_data["library_data"].tracking_status == 0) ? 1 : item_data["library_data"].tracking_status
+    form_isFavorited.checked = item_data["library_data"].is_favorited
+    
+}
+const removeLibBookButton = document.getElementById('remove-lib-book-submit')
+removeLibBookButton.addEventListener('click', async (event) => {
+    event.preventDefault()
+    event.stopPropagation()
+    removeLibBookButton.classList.add("disabled")
+
+    const remove_url = url_remove_book.replace(/12345/, updateLibBookModal.getAttribute("data-lib-book-id"));
+    fetch(remove_url, {
+        method: "POST",
+        body: new FormData(document.querySelector('#update-lib-book-form')),
+    }).then(async (response) => {
+        if (!response.ok) {
+            removeLibBookButton.classList.remove("disabled")
+        } else {
+            refreshLibrary()
+            updateLibBookBsModal.hide()
+        }
+    })
+    return false;
 })

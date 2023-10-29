@@ -85,7 +85,6 @@ async function redrawLibrary() {
     sortedCachedLibrary.forEach((library_item) => {
         const book_data = library_item["book_data"];
         const library_data = library_item["library_data"];
-        console.log(book_data)
         counter++;
         if (layoutOption == 'grid') {
             htmlString += 
@@ -147,7 +146,6 @@ async function redrawLibrary() {
     library_div.innerHTML = htmlString
     renderTags();
     await connectListeners();
-    console.log('counter: ' + counter)
 }
 
 async function updateDetailModal(id) {
@@ -295,23 +293,75 @@ tooltipelements.forEach((el) => {
     new bootstrap.Tooltip(el);
 });
 
+// add modal
+const addLibBookModal = new bootstrap.Modal('#add-lib-book-modal')
+const addLibBookForm = document.getElementById("add-lib-book-form")
+addLibBookForm.addEventListener('submit', async (event) => {
+    event.preventDefault()
+    event.stopPropagation()
+    if (!addLibBookForm.checkValidity()) {
+        document.getElementById("book-already-exists").style.display = 'none';
+        document.getElementById("book-is-null").style.display = 'block';
+        return false;
+    }
+    document.getElementById("book-is-null").style.display = 'none';
+
+    document.getElementById("add-lib-book-submit").classList.add("disabled")
+    fetch(url_add_book, {
+        method: "POST",
+        body: new FormData(document.querySelector('#add-lib-book-form')),
+    }).then(async (response) => {
+        if (!response.ok) {
+            if (response.status == 409) {
+                document.getElementById("book-already-exists").style.display = 'block';
+            }
+            document.getElementById("add-lib-book-submit").classList.remove("disabled")
+        } else {
+            document.getElementById("book-already-exists").style.display = 'none';
+            refreshLibrary()
+            addLibBookModal.hide()
+        }
+    })
+    return false;
+})
+document.getElementById("add-lib-book-modal").addEventListener('hidden.bs.modal', async () => {
+    addLibBookForm.reset()
+    document.getElementById("book-already-exists").style.display = 'none';
+    document.getElementById("add-lib-book-submit").classList.remove("was-validated", "disabled")
+})
+
 // modal stuff
-document.getElementById('tracking-status-selection').addEventListener('input', async () => {
+const detailModal_trackingStatusSelection = document.getElementById('tracking-status-selection')
+const detailModal_buttonRemove = document.getElementById('lib_button_remove')
+const detailModal_buttonFavorite = document.getElementById('lib_button_fav')
+detailModal_trackingStatusSelection.addEventListener('input', async () => {
     detailModalChanged = true;
-    // change status it
 })
-document.getElementById('lib_button_remove').addEventListener('click', async () => {
+detailModal_buttonRemove.addEventListener('click', async () => {
     detailModalChanged = true;
-    // remove it
+    const remove_url = url_remove_book.replace(/12345/, detailModal.getAttribute('data-lib-book-id'));
+    fetch(remove_url, {
+        method: "POST",
+        // TODO: add form
+    }).then(() => {})
 })
-document.getElementById('lib_button_fav').addEventListener('click', async () => {
+detailModal_buttonFavorite.addEventListener('click', async () => {
     detailModalChanged = true;
     // favorite it
+    detailModal_buttonFavorite.setAttribute("data-lib-is-favorited", 
+        detailModal_buttonFavorite.getAttribute()
+    )
 })
 detailModal.addEventListener('hide.bs.modal', async function(e) {
     // check if theres any change
     if (detailModalChanged === true) {
-        await refreshLibrary();
+        // fetch(delete_url, {
+        //     method: "POST",
+        //     body: new FormData(document.querySelector('#delete-item-form'))
+        // }).then(async () => {
+        //     await refreshLibrary()
+        // })        
+        refreshLibrary();
     }
     detailModalChanged = false;
     console.log("boop")
