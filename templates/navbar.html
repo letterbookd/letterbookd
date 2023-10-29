@@ -29,7 +29,7 @@
                 </li>
 
                 
-                <form class="d-flex" action="{% url 'reader:search_handler' %}" method="get">
+                <form id="search" class="d-flex" action="{% url 'reader:search_handler' %}" method="get">
                     <select class="form-select me-2" name="search_type" aria-label="Search Type">
                         <option value="catalog" selected>Search in Catalog</option>
                         <option value="library">Search in Library</option>
