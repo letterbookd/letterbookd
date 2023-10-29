@@ -2,10 +2,21 @@
 
 {% block content %}
 
+<style>
+.hide{
+    display: none;
+}
+</style>
+
 <!----------------------------------------------------------------------------------------------------------->
 
 <div class="total-books" id="total-books">
     <p>- {{books.count}} books in total -</p>
+</div>
+
+<div class="search-wrapper d-flex">
+    <input type="search" id="search" class="ms-1" type="text">
+    <button class="btn btn-primary ms-1" id="search_button">Search</button>
 </div>
 
 <div>
@@ -19,14 +30,126 @@
 </div>
 
 <div>
-    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#add-book-modal" onclick="setAddBookModal()">Add Book</button>
+<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#add-book-modal" onclick="setAddBookModal()">Add Book</button>
 </div>
 
 <div class="book-container" id="book-container"></div>
 
+<!-- Modal for adding new book and editing books -->
 <div class="modal fade" id="add-book-modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog">
+        <div class="modal-content" id="modal_content"></div>
+    </div>
+</div>
+
+<!-- Modal for deleting item -->
+<div class="modal fade" id="delete-book-modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
         <div class="modal-content">
+            <div class="modal-header">
+                <h1>Delete Book?</h1>
+            </div>
+            <div class="modal-body">
+                <p id="confirm-message">Are you sure you want to delete?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="button_delete" data-bs-dismiss="modal">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    const searchInput = document.querySelector("#search")
+    const searchButton = document.getElementById("search_button")
+
+    searchInput.addEventListener("keypress", async function (e){
+        if(e.key === 'Enter'){
+            const sortedAndFilteredBooks = await refreshBookSorted()
+            const value = e.target.value.toLowerCase()
+            sortedAndFilteredBooks.forEach(book =>{
+                const title = book.fields.title.toString().toLowerCase()
+                const authors = book.fields.authors.toString().toLowerCase()
+                
+                const isVisible = title.includes(value) || authors.includes(value)
+    
+                const bookContainer = document.getElementById(`book-container-${book.pk}`)
+    
+                if(!isVisible){
+                    bookContainer.classList.toggle("hide")
+                }
+            })
+        }
+    })
+
+    searchButton.addEventListener("click", async function (e){
+        const sortedAndFilteredBooks = await refreshBookSorted()
+        const value = searchInput.value.toLowerCase()
+        sortedAndFilteredBooks.forEach(book =>{
+            const title = book.fields.title.toString().toLowerCase()
+            const authors = book.fields.authors.toString().toLowerCase()
+            
+            const isVisible = title.includes(value) || authors.includes(value)
+
+            const bookContainer = document.getElementById(`book-container-${book.pk}`)
+
+            if(!isVisible){
+                bookContainer.classList.toggle("hide")
+            }
+        })
+    })
+
+    //--------------------------------------------------------------------------------------------
+
+    async function getBooks() {
+        return fetch("{% url 'catalog:get_book_json' %}").then((res) => res.json())
+    }
+
+    //--------------------------------------------------------------------------------------------
+
+    function setAddBookModal(){
+        //set modal so that it displays django modelForm
+        document.getElementById("modal_content").innerHTML = `<div class="modal-header">
+                <h1 class="modal-title fs-5" id="modal-title-label">Add New Book</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="form" onsubmit="return false;">
+                    {% csrf_token %}
+                    <table>
+                    {{ form.as_p }}
+                    </table>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <input type="submit" class="btn btn-primary" id="button_add" data-bs-dismiss="modal" value="Add Book"/>
+            </div>`
+
+        document.getElementById("form").reset()
+
+        document.getElementById("modal-title-label").innerHTML = "Add New Book";
+        //document.getElementById("button_add").innerHTML = "Add Book";
+        document.getElementById("button_add").onclick = addBook;
+    }
+
+    function addBook() {
+        fetch("{% url 'catalog:add_book_ajax' %}", {
+            method: "POST",
+            body: new FormData(document.querySelector('#form'))
+        }).then(refreshBookSorted)
+
+        document.getElementById("form").reset()
+        return false
+    }
+
+    //--------------------------------------------------------------------------------------------
+
+    function setEditBookModal(id){
+        //set modal so that it displays static HTML form
+        document.getElementById("modal_content").innerHTML = `
             <div class="modal-header">
                 <h1 class="modal-title fs-5" id="modal-title-label">Add New Book</h1>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -71,57 +194,8 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 <button type="button" class="btn btn-primary" id="button_add" data-bs-dismiss="modal">Add Book</button>
-            </div>
-        </div>
-    </div>
-</div>
+            </div>`
 
-<!-- Modal for deleting item -->
-<div class="modal fade" id="delete-book-modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h1>Delete Book?</h1>
-            </div>
-            <div class="modal-body">
-                <p id="confirm-message">Are you sure you want to delete?</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" id="button_delete" data-bs-dismiss="modal">Delete</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-
-<script>
-    async function getBooks() {
-        return fetch("{% url 'catalog:get_book_json' %}").then((res) => res.json())
-    }
-
-    //--------------------------------------------------------------------------------------------
-
-    function setAddBookModal(){
-        document.getElementById("form").reset()
-        document.getElementById("modal-title-label").innerHTML = "Add New Book";
-        document.getElementById("button_add").innerHTML = "Add Book";
-        document.getElementById("button_add").onclick = addBook;
-    }
-
-    function addBook() {
-        fetch("{% url 'catalog:add_book_ajax' %}", {
-            method: "POST",
-            body: new FormData(document.querySelector('#form'))
-        }).then(refreshBook)
-
-        document.getElementById("form").reset()
-        return false
-    }
-
-    //--------------------------------------------------------------------------------------------
-
-    function setEditBookModal(id){
         document.getElementById("modal-title-label").innerHTML = "Edit Book";
         document.getElementById("button_add").innerHTML = "Edit Book";
 
@@ -159,9 +233,10 @@
         });
 
         if(response.ok){
-            refreshBook();
+            refreshBookSorted();
         }
     }
+
 
     //--------------------------------------------------------------------------------------------
 
@@ -182,7 +257,7 @@
             method: "DELETE",
         });
         if (response.ok) {
-            refreshBook();
+            refreshBookSorted();
         }
     }
 
@@ -240,17 +315,19 @@
         books.forEach((item) => {
             let authors = item.fields.authors.replaceAll(";", ", ")
 
-            htmlString += `\n<div class="border border-3 mt-5 mb-5 p-5">
+            htmlString += `\n<div id="book-container-${item.pk}" class="border border-3 mt-5 mb-5 p-5">
             <div class="book">
                 <div class="book-content">
                     <div class="mb-3">
-                        <div id="title-${item.pk}"><h2>${item.fields.title}</h2></div>
-                    </div>
-                    <div class="mb-3">
-                        <div id="authors-${item.pk}"><h3>${authors}</h3></div>
-                    </div>
-                    <div class="mb-3">
                         <img id="thumbnail-${item.pk}" src="${item.fields.thumbnail}"></img>
+                    </div>
+                    <div class="mb-3">
+                        <div class="mb-1">Title:</div>
+                        <div id="title-${item.pk}"><p>${item.fields.title}</p></div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="mb-1">Authors:</div>
+                        <div id="authors-${item.pk}"><p>${authors}</p></div>
                     </div>
                     <div class="mb-3">
                         <div class="mb-1">ISBN:</div>
@@ -279,11 +356,14 @@
                         <div class="mb-1">Description:</div><br>
                         <div id="description-${item.pk}"><p>${item.fields.description}</p></div>
                     </div>
-                    <div class="mb-3">
-                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#add-book-modal" onclick="setEditBookModal(${item.pk})">Edit Book</button>
-                    </div>
-                    <div class="mb-3">
-                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#delete-book-modal" onclick="deleteConfirmModal(${item.pk})">Delete Book</button>
+
+                    <div class="mt-3 mb-3 d-flex">
+                        <div class="mb-3 me-3">
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#add-book-modal" onclick="setEditBookModal(${item.pk})">Edit Book</button>
+                        </div>
+                        <div class="mb-3">
+                            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#delete-book-modal" onclick="deleteConfirmModal(${item.pk})">Delete Book</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -292,6 +372,8 @@
         
         document.getElementById("book-container").innerHTML = htmlString
         document.getElementById("total-books").innerHTML = `<p>- ${books_count} books in total -</p>`
+
+        return books
     }
 
     refreshBookSorted();

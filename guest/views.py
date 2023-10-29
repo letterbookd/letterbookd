@@ -8,6 +8,7 @@ from django.contrib import messages
 
 from reader.models import *
 from library.models import Library
+from catalog.models import Librarian
 
 # Views for Guest
 def show_landing(request):
@@ -17,7 +18,10 @@ def show_landing(request):
 
 def user_login(request):
     if request.user.is_authenticated:
-        return redirect(reverse("library:show_library"))
+        if(hasattr(request.user, "librarian")):
+            return redirect(reverse("catalog:show_librarian_catalog"))
+        else:
+            return redirect(reverse("library:show_library"))
 
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -25,7 +29,10 @@ def user_login(request):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
-            response = HttpResponseRedirect(reverse("library:show_library"))  ## TODO: ganti jadi library 
+            if(hasattr(request.user, "librarian")):
+                response = HttpResponseRedirect(reverse("catalog:show_librarian_catalog"))
+            else:
+                response = HttpResponseRedirect(reverse("library:show_library"))  ## TODO: ganti jadi library 
             return response
         else:
             messages.info(request, 'Incorrect username or password')
