@@ -1,6 +1,6 @@
 {% load static %}
 
-<nav class="navbar navbar-expand-md bg-primary-subtle shadow-sm sticky-top">
+<nav class="navbar navbar-expand-md bg-primary-subtle shadow-sm">
     <div class="container-fluid">
         {% if request.user.is_authenticated %}
         <a class="navbar-brand text-primary-emphasis" href="{% url 'library:show_library' %}">letterbookd</a>
@@ -26,24 +26,11 @@
                     <a class="nav-link" aria-current="page" href="{% url 'catalog:show_reader_catalog' %}">Catalog</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" aria-current="page" href="#">Forum</a>
+                    <a class="nav-link" aria-current="page" href="{% url 'forum:forum' %}">Forum</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" aria-current="page" href="{% url 'review:show_reviews' %}">Review</a>
                 </li>
-
-                
-                <form id="search" class="d-flex" action="{% url 'reader:search_handler' %}" method="get">
-                    <select class="form-select me-2" name="search_type" aria-label="Search Type">
-                        <option value="catalog" selected>Search in Catalog</option>
-                        <option value="library">Search in Library</option>
-                        <option value="reader">Search Reader</option>
-                    </select>
-                    <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name="q">
-                    
-                    <button class="btn btn-outline-success" type="submit">Search</button>
-                </form>
-                
                 {% endif %}
             </ul>
 
@@ -93,10 +80,3 @@
 </nav>
 
 <script type="text/javascript" src="{% static 'js/theme.js' %}"></script>
-
-<script>
-    function setSearchType(labelText, value) {
-        document.getElementById('categoryLabel').textContent = labelText;
-        document.getElementById('hiddenSearchType').value = value;
-    }
-</script>

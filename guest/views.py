@@ -75,5 +75,5 @@ def user_logout(request):
     response = HttpResponseRedirect(reverse('guest:landing_page'))
     return response
 
-def error_404_view(request):
-    return render(request, '404.html', status=404, context={'page_title': 'Uh oh'})
+
+
