@@ -13,7 +13,11 @@
 </head>
 <body>
     <h1>Latest Reviews</h1>
+    <!-- Tombol Show Only My Review -->
+    <button class="btn btn-primary show-my-reviews">Show Only My Reviews</button>
+
     <!-- Daftar review -->
+    <div id="reviews-container" style="width:90%"></div>
     <div id="review-list">
         {% for review in reviews %}
         <div class="card mb-3">
@@ -29,13 +33,167 @@
                             <i class="far fa-star"></i>
                         {% endif %}
                     {% endfor %}
-                </div>                
+                </div>  
+                <p class="card-text">Rating: {{ review.status_on_review }}</p>              
                 <p class="card-text">Rating: {{ review.stars_rating }}</p>
                 <p class="card-text">Date: {{ review.date_posted }}</p>
+                <button class="btn btn-warning edit-review" data-id="{{ review.id }}">Edit</button>
+                <button class="btn btn-danger remove-review" data-id="{{ review.id }}">Hapus</button>
+
             </div>
         </div>
         {% endfor %}
+
+        <div class="modal fade" id="edit-review-modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="edit-review">{{ "Edit Review" }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="review-form">
+                            {% csrf_token %}
+                            <label for="stars_rating">Rating:</label>
+                            <select id="stars-rating" name="stars_rating" required>
+                                <option value="0">0</option>
+                                <option value="0.5">0.5</option>
+                                <option value="1">1</option>
+                                <option value="1.5">1.5</option>
+                                <option value="2">2</option>
+                                <option value="2.5">2.5</option>
+                                <option value="3">3</option>
+                                <option value="3.5">3.5</option>
+                                <option value="4">4</option>
+                                <option value="4.5">4.5</option>
+                                <option value="5">5</option>
+                            </select>
+                            
+                            <label for="status_on_review">Status on Review:</label>
+                            <select name="status_on_review" id="status-on-review-select" required>
+                                <option value="FINISHED">FINISHED</option>
+                                <option value="READING">READING</option>
+                                <option value="ON HOLD">ON HOLD</option>
+                                <option value="PLANNED">PLANNED</option>
+                                <option value="DROPPED">DROPPED</option>
+                                <option value="UNTRACKED">UNTRACKED</option>
+                            </select>
+                            
+                            <label for="review_text">Review Text:</label>
+                            <textarea name="review_text" rows="4" cols="50" required>{{ review.review_text }}</textarea>
+                            
+                            <button type="submit">{{ "Edit Review" }}</button>
+                        </form>
+        
+                        <!-- Container untuk menampilkan gambar bintang -->
+                        <div id="star-container">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal for deleting item -->
+        <div class="modal fade" id="delete-review-modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1>Delete Review?</h1>
+                    </div>
+                    <div class="modal-body">
+                        <p id="confirm-message">Are you sure you want to delete?</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-primary" id="button_delete" data-bs-dismiss="modal">Delete</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+
     </div>
+
+    <script>
+        async function updateStarRating() {
+            console.log("Update Star Rating function is called.");
+            var selectedRating = parseFloat($("#stars-rating").val());
+            var starContainer = $("#star-container");
+
+            // Menghapus bintang sebelumnya
+            starContainer.empty();
+
+            // Menambahkan bintang sesuai dengan rating yang dipilih oleh pengguna
+            for (var i = 1; i <= 5; i++) {
+                if (i <= selectedRating) {
+                    // Menampilkan bintang penuh
+                    starContainer.append('<i class="fas fa-star"></i>');
+                } else if (i - 0.5 <= selectedRating) {
+                    // Menampilkan bintang setengah
+                    starContainer.append('<i class="fas fa-star-half-alt"></i>');
+                } else {
+                    // Menampilkan bintang kosong
+                    starContainer.append('<i class="far fa-star"></i>');
+                }
+            }
+        }
+
+        function deleteConfirmModal(id){
+        const review = document.getElementById(`review-${id}`).textContent;
+        document.getElementById("confirm-message").innerHTML = `Are you sure you want to delete ${review}?`
+
+        function deleteHandle(){
+            deleteBook(id);
+        }
+
+        document.getElementById("button_delete").onclick = deleteHandle;
+    }
+
+        async function deleteReview(id) {
+            let url = "{% url 'review:delete_review' '123' %}".replace('123', id);
+            const response = await fetch(url, {
+                method: "DELETE",
+            });
+            if (response.ok) {
+                refreshReviewSorted();
+            }
+        }
+        $(document).ready(function() {
+
+                // Inisialisasi tombol Show Only My Review
+            $(".show-my-reviews").click(function() {
+                // Ambil username pengguna yang sedang login
+                var currentUser = "{{ request.user }}";
+
+                // Sembunyikan semua tombol "Edit" dan "Hapus" di awal
+                $(".edit-review, .remove-review").hide();
+
+                // Tampilkan tombol "Edit" dan "Hapus" hanya pada card milik pengguna yang sedang login
+                $(".card:has(h6:contains('" + currentUser + "')) .edit-review, .card:has(h6:contains('" + currentUser + "')) .remove-review").show();
+            });
+            var currentUser = "{{ request.user }}";
+            $(".review-box").each(function() {
+                var reviewOwner = $(this).find("h3").text();
+                var reviewId = $(this).find(".edit-review").data("id");
+
+                if (reviewOwner === currentUser) {
+                    $(this).find(".edit-review, .remove-review").show();
+                } else {
+                    $(this).find(".edit-review, .remove-review").hide();
+                }
+            });
+
+            $("#stars-rating").change(function() {
+                updateStarRating();
+            });
+        });
+
+    </script>
 
 </body>
 </html>

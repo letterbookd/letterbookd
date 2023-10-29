@@ -33,8 +33,13 @@
         </select>
         
         <label for="status_on_review">Status on Review:</label>
-        <select name="status_on_review" required>
-            <!-- Isi ini dengan data yang akan diambil melalui AJAX -->
+        <select name="status_on_review" id="status-on-review-select" required>
+            <option value="FINISHED">FINISHED</option>
+            <option value="READING">READING</option>
+            <option value="ON HOLD">ON HOLD</option>
+            <option value="PLANNED">PLANNED</option>
+            <option value="DROPPED">DROPPED</option>
+            <option value="UNTRACKED">UNTRACKED</option>
         </select>
         
         <label for="review_text">Review Text:</label>

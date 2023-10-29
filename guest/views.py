@@ -5,17 +5,26 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from forum.views import user_thread_data, user_liked_thread_data
+
 
 from reader.models import *
 from library.models import Library
+from catalog.models import Librarian
 
 # Views for Guest
 def show_landing(request):
+    if request.user.is_authenticated:
+        return HttpResponseRedirect(reverse("library:show_library"))
     return render(request, 'main.html', context={})
 
 def user_login(request):
     if request.user.is_authenticated:
-        return redirect(reverse("library:show_library"))
+        if(hasattr(request.user, "librarian")):
+            return redirect(reverse("catalog:show_librarian_catalog"))
+        else:
+            return redirect(reverse("library:show_library"))
 
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -23,7 +32,10 @@ def user_login(request):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
-            response = HttpResponseRedirect(reverse("library:show_library"))  ## TODO: ganti jadi library 
+            if(hasattr(request.user, "librarian")):
+                response = HttpResponseRedirect(reverse("catalog:show_librarian_catalog"))
+            else:
+                response = HttpResponseRedirect(reverse("library:show_library"))  ## TODO: ganti jadi library 
             return response
         else:
             messages.info(request, 'Incorrect username or password')
@@ -61,5 +73,5 @@ def user_logout(request):
     response = HttpResponseRedirect(reverse('guest:landing_page'))
     return response
 
-def error_404_view(request):
-    return render(request, '404.html', status=404, context={'page_title': 'Uh oh'})
+
+

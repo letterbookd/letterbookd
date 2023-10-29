@@ -8,7 +8,7 @@
     <!-- Include jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <!-- Include Star Rating Plugin -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.2/css/all.min.css">    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.2/css/all.min.css">
 
     <style>
         .review-box {
@@ -17,21 +17,24 @@
             margin: 10px 0;
             background-color: #f9f9f9;
         }
-    
+
         .review-box h3 {
             margin: 0;
         }
-    
+
         .review-box p {
             margin: 5px 0;
         }
     </style>
-    
+
 </head>
 <body>
     <h1>Review for Book: {{ book_title }}</h1>
+    <div>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#add-review-modal">Add Review</button>
+    </div>
 
-    <a href="{% url 'show_reviews' book_id=book.id %}">Back to Book Details</a>
+    <a href="{% url 'catalog:show_book_detail' id=book_id %}">Back to Book Details</a>
 
     <!-- Daftar review -->
     <div id="review-list">
@@ -47,14 +50,120 @@
                         <i class="far fa-star"></i>
                     {% endif %}
                 {% endfor %}
-            </div> 
+            </div>
             <p>Rating: {{ review.stars_rating }}</p>
+            <p>Status on Review: {{  review.status_on_review  }}</p>
             <p>Date: {{ review.date_posted }}</p>
         </div>
         {% endfor %}
     </div>
-    
+
+    <div class="modal fade" id="add-review-modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content" id="modal_content">
+                <div class="border border-3 mt-5 mb-5 p-5">
+                    <div class="review">
+                        <div class="review-content">
+                            <form id="review-form">
+                                {% csrf_token %}
+                                <label for="stars_rating">Rating:</label>
+                                <div id="star-container">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                </div>
+                                <select id="stars-rating" name="stars_rating" required>
+                                    <option value="0">0</option>
+                                    <option value="0.5">0.5</option>
+                                    <option value="1">1</option>
+                                    <option value="1.5">1.5</option>
+                                    <option value="2">2</option>
+                                    <option value="2.5">2.5</option>
+                                    <option value="3">3</option>
+                                    <option value="3.5">3.5</option>
+                                    <option value="4">4</option>
+                                    <option value="4.5">4.5</option>
+                                    <option value="5">5</option>
+                                </select>
+                                <br>
+                                <label for="status_on_review" id="status_on_review">Status on Review:</label>
+                                <br>
+                                <label for="review_text">Review Text:</label>
+                                <textarea name="review_text" rows="4" cols="50" required>{{ review.review_text }}</textarea>
+                                <button class="btn btn-outline-success" type="submit" onclick="addReview()">Submit</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function addReview() {
+            fetch("{% url 'review:create_review_ajax' id=book_id %}", {
+                method: "POST",
+                body: new FormData(document.querySelector('#review-form'))
+            }).then(refreshBookSorted)
+
+            document.getElementById("review-form").reset()
+            return false
+        }
+        async function getBookInLibrary() {
+            return fetch("{% url 'review:book_in_library' id=book_id %}").then((res) => res.json())
+        }
+
+        async function updateStarRating() {
+            console.log("Update Star Rating function is called.");
+            var selectedRating = parseFloat($("#stars-rating").val());
+            var starContainer = $("#star-container");
+
+            // Menghapus bintang sebelumnya
+            starContainer.empty();
+
+            // Menambahkan bintang sesuai dengan rating yang dipilih oleh pengguna
+            for (var i = 1; i <= 5; i++) {
+                if (i <= selectedRating) {
+                    // Menampilkan bintang penuh
+                    starContainer.append('<i class="fas fa-star"></i>');
+                } else if (i - 0.5 <= selectedRating) {
+                    // Menampilkan bintang setengah
+                    starContainer.append('<i class="fas fa-star-half-alt"></i>');
+                } else {
+                    // Menampilkan bintang kosong
+                    starContainer.append('<i class="far fa-star"></i>');
+                }
+            }
+        }
+
+        async function handleStatusOnReview() {
+            const book = await getBookInLibrary()
+            const label = document.getElementById("status_on_review")
+
+            if (book.length == 0) {
+                label.innerHTML = "Status on review: UNTRACKED"
+            } else {
+                book.forEach((item) => {
+                    var status = item.fields.tracking_status
+                    label.innerHTML = "Status on review: " + status;
+                })
+            }
+        }
+
+        handleStatusOnReview();
+
+        $(document).ready(function() {
+            // Ini akan memanggil updateStarRating() setiap kali pemilihan rating diubah
+            $("#stars-rating").change(function() {
+                updateStarRating();
+            });
+            
+            // Fungsi lainnya dan kode JavaScript yang ada
+        });
+    </script>
+
 </body>
 </html>
-
 {% endblock %}

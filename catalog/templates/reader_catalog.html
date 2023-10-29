@@ -2,6 +2,14 @@
 
 {% block content %}
 
+<style>
+
+.hide {
+    display: none;
+}
+
+</style>
+
 <!----------------------------------------------------------------------------------------------------------->
 
 <div class="total-books" id="total-books">
@@ -9,8 +17,8 @@
 </div>
 
 <div class="search-wrapper d-flex">
-    <label>Search: </label>
-    <input class="ms-1" type="text">
+    <input type="search" id="search" class="ms-1" type="text">
+    <button class="btn btn-primary ms-1" id="search_button">Search</button>
 </div>
 
 <div>
@@ -20,6 +28,14 @@
         <option value="authors">Authors</option>
         <option value="rating">Rating</option>
         <option value="favorites_count">Favorites count</option>
+    </select>
+</div>
+
+<div>
+    <label>Filter books by:</label>
+    <select name="sort-books-select" id="filter-books-select" onchange="refreshBookSorted()">
+        <option value="all">All</option>
+        <option value="in_personal_library">In Personal Library</option>
     </select>
 </div>
 
@@ -34,19 +50,76 @@
 <div class="d-flex flex-wrap" id="book-container"></div>
 
 <script>
+
+    const searchInput = document.querySelector("#search")
+    const searchButton = document.getElementById("search_button")
+
+    searchInput.addEventListener("keypress", async function (e){
+        if(e.key === 'Enter'){
+            const sortedAndFilteredBooks = await refreshBookSorted()
+            const value = e.target.value.toLowerCase()
+            sortedAndFilteredBooks.forEach(book =>{
+                const title = book.fields.title.toString().toLowerCase()
+                const authors = book.fields.authors.toString().toLowerCase()
+                
+                const isVisible = title.includes(value) || authors.includes(value)
+    
+                const bookContainer = document.getElementById(`book-container-${book.pk}`)
+    
+                if(!isVisible){
+                    bookContainer.classList.toggle("hide")
+                }
+            })
+        }
+    })
+
+    searchButton.addEventListener("click", async function (e){
+        const sortedAndFilteredBooks = await refreshBookSorted()
+        const value = searchInput.value.toLowerCase()
+        sortedAndFilteredBooks.forEach(book =>{
+            const title = book.fields.title.toString().toLowerCase()
+            const authors = book.fields.authors.toString().toLowerCase()
+            
+            const isVisible = title.includes(value) || authors.includes(value)
+
+            const bookContainer = document.getElementById(`book-container-${book.pk}`)
+
+            if(!isVisible){
+                bookContainer.classList.toggle("hide")
+            }
+        })
+    })
+
+
+    //--------------------------------------------------------------------------------------------
+
     async function getBooks() {
         return fetch("{% url 'catalog:get_book_json' %}").then((res) => res.json())
     }
 
+    async function getRelatedBooks() {
+        return fetch("{% url 'catalog:get_related_books' %}").then((res) => res.json())
+    }
+
     //--------------------------------------------------------------------------------------------
 
-    async function sortBooks(byKey){
-        let sortedBooks;
+    async function sortAndFilterBooks(byKey, byStatus){
+        let sortedAndFilteredBooks;
 
         var books = await getBooks();
+        var relatedBooks = await getRelatedBooks()
 
+        //filter books
+        if(byStatus == 'all'){
+            sortedAndFilteredBooks = books;
+        }
+        else if(byStatus == 'in_personal_library'){
+            sortedAndFilteredBooks = relatedBooks;
+        }
+
+        //sort books
         if(byKey == 'title'){
-            sortedBooks = books.sort(function(a,b){
+            sortedAndFilteredBooks = sortedAndFilteredBooks.sort(function(a,b){
                     let x = a.fields.title.toLowerCase();
                     let y = b.fields.title.toLowerCase();
 
@@ -57,7 +130,7 @@
                     });
         }
         else if(byKey == 'authors'){
-            sortedBooks = books.sort(function(a,b){
+            sortedAndFilteredBooks = sortedAndFilteredBooks.sort(function(a,b){
                     let x = a.fields.authors.toLowerCase();
                     let y = b.fields.authors.toLowerCase();
 
@@ -68,17 +141,19 @@
                 });
             }
         else if(byKey == 'rating'){
-            sortedBooks = books.sort(function(a,b){
+            sortedAndFilteredBooks = sortedAndFilteredBooks.sort(function(a,b){
                 return a.fields.overall_rating - b.fields.overall_rating;
             });
         }
         else if(byKey == 'favorites_count'){
-            sortedBooks = books.sort(function(a,b){
+            sortedAndFilteredBooks = sortedAndFilteredBooks.sort(function(a,b){
                 return a.fields.favorites_count - b.fields.favorites_count;
             });
         }
+
+        //filter books
         
-        return sortedBooks;
+        return sortedAndFilteredBooks;
     }
 
     async function refreshBookSorted(){
@@ -86,8 +161,9 @@
         document.getElementById("total-books").innerHTML = ""
 
         const sortBy = document.querySelector('#sort-books-select').value;
+        const filterBy = document.querySelector('#filter-books-select').value;
         const displayBy = document.querySelector('#display-books-select').value;
-        const books = await sortBooks(sortBy);
+        const books = await sortAndFilterBooks(sortBy, filterBy);
         const books_count = books.length;
         let htmlString = ``
 
@@ -95,7 +171,7 @@
             books.forEach((item) => {
                 let authors = item.fields.authors.replaceAll(";", ", ")
     
-                htmlString += `\n<div class="m-5" style="width:150px ; height:300px ; text-align:center">
+                htmlString += `\n<div id="book-container-${item.pk}" class="m-5" style="width:150px ; height:300px ; text-align:center">
                 <div class="book" style="width:100% ; height:100%">
                     <div onclick="show_book_detail(${item.pk})" class="book-content d-flex flex-column align-items-center justify-content-center" style="width:100% ; height:100% ; cursor:pointer">
                         <div class="mb-3">
@@ -114,7 +190,7 @@
             books.forEach((item) => {
                 let authors = item.fields.authors.replaceAll(";", ", ")
     
-                htmlString += `\n<div class="border border-3 m-1 p-3" style="width:100% ; height:100% ; text-align:left">
+                htmlString += `\n<div id="book-container-${item.pk}" class="border border-3 m-1 p-3" style="width:100% ; height:100% ; text-align:left">
                 <div class="book" style="width:100% ; height:100%">
                     <div onclick="show_book_detail(${item.pk})" class="book-content d-flex flex-column align-items-left justify-content-center" style="width:100% ; height:100% ; cursor:pointer"> 
                         <div class="mb-0.5">
@@ -131,6 +207,9 @@
         
         document.getElementById("book-container").innerHTML = htmlString
         document.getElementById("total-books").innerHTML = `<p>- ${books_count} books in total -</p>`
+
+        //untuk membantu fitur search
+        return books
     }
 
     refreshBookSorted();
