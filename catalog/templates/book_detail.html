@@ -11,10 +11,6 @@
             <img src="{{ book.thumbnail }}" style="width:auto ; height:250px"></img>
         </div>
         <div class="ms-3">
-            <div class="mb-1 d-flex">
-                <h2>{{ book.title }}</h2>
-                <button id="personal-library-button" class="btn btn-outline-warning" data-bs-toggle="button" onclick="addBookToPersonalLibrary()">Add To Personal Library</button>
-            </div>
             <div class="mb-1">
                 <h4>{{ authors }}</h4>
             </div>
@@ -55,7 +51,7 @@
     var book_id = document.getElementById("book-id").getAttribute("value")
     
     function showReviewsPage(){
-        ;
+        window.location.href = "{% url 'review:show_reviews' '123' %}".replace('123', book_id)
     }
 
     //reload kalo teken back button di browser
@@ -79,11 +75,6 @@
     }
 
     handleFavoritesCount()
-
-    async function addBookToPersonalLibrary(){
-        let url = "{% url 'library:add_book' '123'%}".replace('123', book_id);
-        await fetch(url, {method: "POST"});
-    }
 
 </script>
 
