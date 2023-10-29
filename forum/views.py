@@ -2,10 +2,8 @@ from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect
 from django.db.models import Count
-from .models import Thread, Reply, Like
-from .forms import ThreadForm, RepliesForm, DivErrorList
-from django.contrib.auth import get_user_model
-from guest.models import GuestModel
+from forum.models import Thread, Reply, Like
+from forum.forms import ThreadForm, RepliesForm, DivErrorList
 from django.http import JsonResponse
 
 # Create your views here.
