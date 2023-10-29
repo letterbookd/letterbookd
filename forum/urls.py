@@ -4,13 +4,12 @@ from forum.views import *
 app_name = 'forum'
 
 urlpatterns = [
-    path('', thread_list, name='forum'),
-    path('create/', create_thread, name='create_thread'),
-    path('view/<int:thread_id>/', view_thread, name='view_thread'),
-    path('reply/<int:thread_id>/', reply_to_thread, name='reply_to_thread'),
-    path('edit/<int:thread_id>/', edit_thread, name='edit_thread'),
-    path('delete/<int:thread_id>/', delete_thread, name='delete_thread'),
-    path('like/<int:thread_id>/', like_thread, name='like_thread'),
-    path('user_thread', user_thread_data, name='user_thread'),
-    path('user_liked_thread', user_liked_thread_data, name='user_liked_thread'),
+    path('', show_threads, name='show_threads'),
+    path('thread/<int:id>/', get_threads, name='get_thread'),
+    path('new/', create_thread, name='create_threads'),
+    path('edit/<int:id>', edit_thread, name='edit_thread'),
+    path('delete/<int:id>', delete_thread, name='delete_thread'),
+    path('reply/<int:id>', post_reply, name='post_reply'),
+    path('edit_reply/<int:id>', edit_reply, name='edit_reply'),
+    path('delete_reply/<int:id>', delete_reply, name='delete_reply'),
 ]
