@@ -2,27 +2,26 @@
 
 {% block content %}
 
-<h2>Search Results for "{{ query }}"</h2>
+<h2 class="mb-4">Search Results for "{{ query }}"</h2>
 
 {% if results.count == 0 %}
     <p>No results found</p>
 {% else %}
-    <ul>
-        {% for book in results %}
-        <li>
-            <h3>{{ book.title }}</h3>
-            <p><strong>ISBN:</strong> {{ book.isbn13 }}</p>
-            <p><strong>Authors:</strong> {{ book.authors }}</p>
-            <p><strong>Categories:</strong> {{ book.categories }}</p>
-            <img src="{{ book.thumbnail }}" alt="{{ book.title }}" width="100">
-            <p><strong>Description:</strong> {{ book.description }}</p>
-            <p><strong>Published Year:</strong> {{ book.published_year }}</p>
-            <p><strong>Page Count:</strong> {{ book.page_count }}</p>
-            <p><strong>Overall Rating:</strong> {{ book.overall_rating }}</p>
-            <p><strong>Favorites Count:</strong> {{ book.favorites_count }}</p>
-        </li>
+    {% for book in results %}
+        <div class="card mb-3">
+            <div class="row no-gutters">
+                <div class="col-md-4">
+                    <img src="{{ book.thumbnail }}" class="card-img" alt="Thumbnail for {{ book.title }}" style="max-height: 250px; width: auto;">
+                </div>
+                <div class="col-md-8">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ book.title }}</h5>
+                        <p class="card-text"><small class="text-muted">{{ book.authors }}</small></p>
+                    </div>
+                </div>
+            </div>
+        </div>
     {% endfor %}
-    </ul>
 {% endif %}
-    
+
 {% endblock content %}

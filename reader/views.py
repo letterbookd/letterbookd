@@ -129,17 +129,13 @@ def search_handler(request):
 
     if search_type == "catalog":
         results = Book.objects.filter(title__icontains=query)
-        return render(request, 'book_search_results.html', {'results': results})
-
+        return render(request, 'book_search_results.html', {'results': results, 'query': query})
     elif search_type == "library": # INI MASIH ERROR
         user_books = LibraryBook.objects.filter(user=request.user, book__title__icontains=query)
-        #user_books = LibraryBook.objects.filter(library__user=request.user, book__title__icontains=query)
-        return render(request, 'book_search_results.html', {'results': user_books})
-
+        return render(request, 'book_search_results.html', {'results': user_books, 'query': query})
     elif search_type == "reader":
         readers = Reader.objects.filter(Q(display_name__icontains=query) | Q(user__username__icontains=query))
-        return render(request, 'user_search_results.html', {'readers': readers})
-
+        return render(request, 'user_search_results.html', {'readers': readers, 'query': query})
     else:
         return HttpResponse("Invalid search type.")
 
