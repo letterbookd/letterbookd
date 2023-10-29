@@ -2,7 +2,10 @@
 
 {% block content %}
 
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+
 <style> 
+
     .custom-profile-picture {
         width: 100%;
         max-width: 250px;
@@ -11,11 +14,62 @@
     .profile-section {
         margin-bottom: 2rem;
     }
+
     input[readonly] {
         background-color: #e9ecef; 
         color: #495057;           
         cursor: not-allowed;    
     }
+
+    .card {
+        border: 1px solid #e9ecef;
+        border-radius: 5px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        overflow: hidden;  
+    }
+
+    .btn {
+        transition: all 0.3s;
+    }
+
+    .btn:hover {
+        transform: scale(1.05);
+    }
+
+    .card-img-top {
+        display: block;
+        margin: auto;
+    }
+
+    .card-body {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center; 
+    }
+
+    .yellow-star {
+        color: rgb(198, 198, 0);
+    }
+
+    .card.review-card {
+        border: 1px solid #e9ecef;
+        border-radius: 5px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        padding: 20px; 
+    }
+
+    .yellow-star {
+        color: yellow;
+    }
+
+    .review-container p {
+        margin-bottom: 10px;  
+    }
+
+
 </style>
 
 <h1 class="my-4">Profile</h1>
@@ -74,44 +128,6 @@
             </div>
         </div>
 
-        {% if reader.preferences.share_library %}
-            <div id="librarySection" class="profile-section mt-4">
-                <h2>My Library</h2>
-                <div class="row">
-                    {% for item in library_items %}
-                        <div class="col-md-4 mb-4">
-                            <div class="card">
-                                <img src="{{ item.book.thumbnail }}" class="card-img-top" alt="Thumbnail for {{ item.book.title }}" style="max-height: 250px; width: auto;">
-                                <div class="card-body">
-                                    <h5 class="card-title">{{ item.book.title }}</h5>
-                                    <p class="card-text"><small class="text-muted">{{ item.book.authors }}</small></p>
-                                </div>
-                            </div>
-                        </div>
-                    {% endfor %}
-                </div>
-            </div>
-        {% endif %}
-
-        {% if reader.preferences.share_reviews %}
-            <div id="reviewSection" class="profile-section mt-4">
-                <h2>My Review</h2>
-                <div class="row">
-                    {% for review in reviews %} 
-                        <div class="col-md-4 mb-4">
-                            <div class="card">
-                                <p>{{ review.status_on_review }}</p>
-                                <p>{{ review.stars_rating }}</p>
-                                <p>{{ review.review_text }}</p>
-                                <p>{{ review.date_posted|date:"F d, Y" }}</p>
-                            </div>                            
-                        </div>
-                    {% endfor %}
-                </div>
-            </div>
-        {% endif %}
-
-
         {% if reader.user == request.user %}
             <div id="product_cards_container" class="profile-section">
                 <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#edit-profile-modal">Edit Profile</button>
@@ -119,6 +135,56 @@
             </div>
         {% endif %}
     </div>
+</div>
+
+<div class="container">
+    {% if reader.preferences.share_library %}
+        <div id="librarySection" class="profile-section mt-4">
+            <h2>Library</h2>
+            <div class="row">
+                {% for item in library_items %}
+                    <div class="col-md-2 mb-4">
+                    <!-- <div class="col-md-3 mb-4"> --> 
+                        <div class="card">
+                            <img src="{{ item.book.thumbnail }}" class="card-img-top" alt="Thumbnail for {{ item.book.title }}" style="max-height: 200px; max-width: 180px;">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ item.book.title }}</h5>
+                                <p class="card-text"><small class="text-muted">{{ item.book.authors }}</small></p>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
+    {% if reader.preferences.share_reviews %}
+        <div id="reviewSection" class="profile-section mt-4">
+            <h2>Review</h2>
+            <div class="row">
+                {% for review in reviews %} 
+                    <div class="col-md-4 mb-4">
+                        <div class="card review-card">
+                            <p><strong>Status:</strong> {{ review.status_on_review }}</p>
+                            <p>
+                                <strong>Rating:</strong> 
+                                <span class="yellow-star">★</span> {{ review.stars_rating }}
+                            </p>
+                            <p>
+                                <strong>Review:</strong> 
+                                {{ review.review_text }}
+                            </p>
+                            <p>
+                                <strong>Date Posted:</strong> 
+                                {{ review.date_posted|date:"F d, Y" }}
+                            </p>
+                        </div>                            
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
 </div>
 
 <!-- Modal Edit Profile -->

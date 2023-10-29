@@ -38,7 +38,6 @@ def show_profile(request, id):
     return render(request, 'profile.html', context)
 '''
 
-
 @login_required(login_url='/login')
 def show_profile(request, id):
     # Dapatkan objek reader
@@ -156,16 +155,16 @@ def search_handler(request):
 
     if search_type == "catalog":
         results = Book.objects.filter(title__icontains=query)
-        return render(request, 'book_search_results.html', {'results': results})
+        return render(request, 'catalog_search_results.html', {'results': results, 'query': query})
 
     elif search_type == "library":
         user_books = LibraryBook.objects.filter(library__reader__user=request.user, book__title__icontains=query)
-        return render(request, 'book_search_results.html', {'results': user_books, 'query': query})
+        return render(request, 'library_search_results.html', {'results': user_books, 'query': query})
 
 
     elif search_type == "reader":
         readers = Reader.objects.filter(Q(display_name__icontains=query) | Q(user__username__icontains=query))
-        return render(request, 'user_search_results.html', {'readers': readers})
+        return render(request, 'user_search_results.html', {'readers': readers, 'query': query})
 
     else:
         return HttpResponse("Invalid search type.")
@@ -213,8 +212,8 @@ def get_reader_json(request):
         return JsonResponse({'error': 'Data not found'}, status=404)
     
 def get_readers_json(request):
-    readers = list(Reader.objects.values())  # Convert QuerySet to a list of dictionaries
-    reader_preferences = list(ReaderPreferences.objects.values())  # Convert QuerySet to a list of dictionaries
+    readers = list(Reader.objects.values())  
+    reader_preferences = list(ReaderPreferences.objects.values())  
 
     combined_data = {
         'readers': readers,
