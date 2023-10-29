@@ -6,6 +6,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib import messages
 
+from .forms import PrettierUserCreationForm
 from reader.models import *
 from library.models import Library
 
@@ -30,14 +31,14 @@ def show_landing(request):
 def user_login(request):
     if request.user.is_authenticated:
         return HttpResponseRedirect(reverse("guest:landing_page"))
-        
+    
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
-            reverse("guest:landing_page")
+            return redirect(reverse("guest:landing_page"))
         else:
             messages.info(request, 'Incorrect username or password')
 
@@ -48,26 +49,27 @@ def user_register(request):
     if request.user.is_authenticated:
         return HttpResponseRedirect(reverse("guest:landing_page"))
     
+    form = PrettierUserCreationForm(request.POST or None)
     if request.method == "POST":
-        form = UserCreationForm(request.POST)
         if form.is_valid():
-            form.save()
-            user = authenticate(request, username=form.cleaned_data['username'], password=form.cleaned_data['password1'])
-            login(request, user)
+            new_user = form.save()
 
             # buat objek reader juga
             reader = Reader()
-            reader.user = user
-            reader.display_name = user.get_username()
+            reader.user = new_user
+            reader.display_name = new_user.get_username()
             reader.personal_library = Library()
             reader.preferences = ReaderPreferences()
             reader.personal_library.save()
             reader.preferences.save()
             reader.save()
 
+            user = authenticate(request, username=form.cleaned_data['username'], password=form.cleaned_data['password1'])
+            login(request, user)
+
             response = HttpResponseRedirect(reverse("guest:landing_page"))
             return response
-    context = {'page_title': "Sign up"}
+    context = {'page_title': "Sign up", 'form': form}
     return render(request, 'register.html', context)
 
 def user_logout(request):

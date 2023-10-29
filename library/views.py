@@ -41,14 +41,6 @@ def get_library(request):
     return JsonResponse({"library": library})
 
 @login_required(login_url='/login')
-def get_lib_book_form(request, id):
-    ''' Mengembalikan ModelForm untuk LibraryBook'''
-
-    reader_library = get_object_or_404(Library, reader__user=request.user)
-    bookForm = UpdateLibBookForm(instance=get_object_or_404(LibraryBook, book__id=id, library=reader_library))
-    return HttpResponse(bookForm.as_div())
-
-@login_required(login_url='/login')
 @require_POST
 def update_book_status(request, id):
     ''' Mengupdate status tracking buku yang ada di library '''
