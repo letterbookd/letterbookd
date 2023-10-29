@@ -40,10 +40,10 @@ def get_all_user_reviews(request):
     all_review = Review.objects.all()
     return HttpResponse(serializers.serialize('json', all_review))
 
-def book_in_library(request, id):
+def book_in_library(request, book_id):
     reader = Reader.objects.get(user=request.user)
     library = reader.personal_library
-    book = Book.objects.get(pk=id)
+    book = Book.objects.get(pk=book_id)
 
     target_book = LibraryBook.objects.filter(library=library, book=book)
     return HttpResponse(serializers.serialize('json', target_book))
@@ -69,15 +69,15 @@ def create_review_ajax(request, book_id):
         review_text = request.POST.get("review_text")
         book = Book.objects.get(pk=book_id)
         reader = Reader.objects.get(user=request.user)
-        library = Library.objects.get(user=request.user, book=book)
-        status_on_review = library.status_tracking
+        library_book = LibraryBook.objects.get(library__reader__user=request.user, book=book)
+        status_on_review = library_book.tracking_status
 
         new_review = Review(user=reader, book=book, stars_rating=stars_rating, status_on_review=status_on_review, review_text=review_text)
         new_review.save()
 
         response_data = {
             'review_id': new_review.id,
-            'user': new_review.user.username,
+            'user': new_review.user,
             'stars_rating': new_review.stars_rating,
             'status_on_review': new_review.status_on_review,
             'review_text': new_review.review_text,

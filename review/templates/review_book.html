@@ -103,7 +103,8 @@
 
     <script>
         function addReview() {
-            fetch("{% url 'review:create_review_ajax' id=book_id %}", {
+            const create_ajax_url = "{% url 'review:create_review_ajax' book_id=1 %}".replace(/1/, "{{book_id}}");
+            fetch(create_ajax_url, {
                 method: "POST",
                 body: new FormData(document.querySelector('#review-form'))
             }).then(refreshBookSorted)
@@ -112,7 +113,8 @@
             return false
         }
         async function getBookInLibrary() {
-            return fetch("{% url 'review:book_in_library' id=book_id %}").then((res) => res.json())
+            const book_in_lib = "{% url 'review:book_in_library' book_id=1 %}".replace(/1/, "{{book_id}}");
+            return fetch(book_in_lib).then((res) => res.json())
         }
 
         async function updateStarRating() {
