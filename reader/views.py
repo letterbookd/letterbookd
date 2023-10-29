@@ -43,7 +43,10 @@ def show_profile(request, id):
     reader = get_object_or_404(Reader, user__id=id)
 
     # Dapatkan 3 buku di library pengguna
-    library_items = get_object_or_404(Library, reader__user=request.user).mybooks.order_by('-id')[:3].all()
+    #library_items = get_object_or_404(Library, reader__user=request.user).mybooks.order_by('-id')[:3].all()
+    #library_items = reader.library.mybooks.order_by('-id')[:3].all()
+    library_items = get_object_or_404(Library, reader__user__id=id).mybooks.order_by('-id')[:3].all()
+
 
     form = UserProfileForm()
 
@@ -55,6 +58,8 @@ def show_profile(request, id):
     }
 
     return render(request, 'profile.html', context)
+
+
 
 
 # Mengembalikan halaman hasil searching Reader dengan display_name
