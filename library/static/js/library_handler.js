@@ -376,8 +376,8 @@ removeLibBookButton.addEventListener('click', async (event) => {
         method: "POST",
         body: new FormData(document.querySelector('#update-lib-book-form')),
     }).then(async (response) => {
+        removeLibBookButton.classList.remove("disabled")
         if (!response.ok) {
-            removeLibBookButton.classList.remove("disabled")
         } else {
             refreshLibrary()
             updateLibBookBsModal.hide()
