@@ -1,6 +1,5 @@
 from datetime import datetime
 from django.db import models
-from guest.models import GuestModel
 from django.conf import settings
 from django.contrib.auth.models import User
 
