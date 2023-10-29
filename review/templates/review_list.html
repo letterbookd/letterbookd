@@ -37,8 +37,9 @@
                 <p class="card-text">Rating: {{ review.status_on_review }}</p>              
                 <p class="card-text">Rating: {{ review.stars_rating }}</p>
                 <p class="card-text">Date: {{ review.date_posted }}</p>
-                <button class="btn btn-warning edit-review" data-id="{{ review.id }}">Edit</button>
-                <button class="btn btn-danger remove-review" data-id="{{ review.id }}">Hapus</button>
+                <button class="btn btn-warning edit-review" data-bs-toggle="modal" data-bs-target="#edit-review-modal">Edit</button>
+                <button class="btn btn-danger remove-review" data-bs-toggle="modal" data-bs-target="#delete-review-modal">Hapus</button>
+                
 
             </div>
         </div>
