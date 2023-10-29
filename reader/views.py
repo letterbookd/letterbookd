@@ -1,21 +1,72 @@
-from django.http import HttpResponseNotFound, JsonResponse
+from django.http import HttpResponse, HttpResponseNotFound, JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Reader
-from .forms import ReaderForm, ReaderPreferencesForm
+
+from review.models import Review
+from .models import Reader, ReaderPreferences
+from .forms import ReaderForm, ReaderPreferencesForm, UserProfileForm
 from django.contrib.auth.models import User
 from library.models import *
 from catalog.models import *
 from django.views.decorators.csrf import csrf_exempt
+from django.core import serializers
+from django.db.models import Q
+from django.contrib.auth.decorators import login_required
+
 
 # Menampilkan halaman profile Reader
+'''
 def show_profile(request, id):
     reader = get_object_or_404(Reader, user__id=id)
     return render(request, 'profile.html', {'reader': reader, 'page_title': 'Profile'})
+'''
+
+'''
+@login_required(login_url='/login')
+def show_profile(request, id):
+    # Dapatkan objek reader
+    reader = get_object_or_404(Reader, user__id=id)
+
+    # Dapatkan semua buku di library pengguna
+    library_books = LibraryBook.objects.filter(library__reader=reader)
+
+    context = {
+        'reader': reader,
+        'page_title': "Profile",
+        'library_books': library_books,
+    }
+
+    return render(request, 'profile.html', context)
+'''
+
+@login_required(login_url='/login')
+def show_profile(request, id):
+    # Dapatkan objek reader
+    reader = get_object_or_404(Reader, user__id=id)
+
+    # Dapatkan semua buku di library pengguna
+    library_items = get_object_or_404(Library, reader__user__id=id).mybooks.order_by('-id').all()
+
+    # Dapatkan semua review yang ditulis pengguna
+    reviews = Review.objects.filter(user=reader)
+
+    form = UserProfileForm()
+
+    context = {
+        'reader': reader,
+        'page_title': "Profile",
+        'library_items': library_items,
+        'form': form,
+        'reviews': reviews, 
+    }
+
+    return render(request, 'profile.html', context)
+
+
 
 # Mengembalikan halaman hasil searching Reader dengan display_name
 def search_reader(request, display_name):
     readers = Reader.objects.filter(display_name__icontains=display_name)
-    return render(request, 'user_search_results.html', {'readers': readers})
+    return render(request, 'user_search_results.html', {'readers': readers, 'page_title': "Reader Search"})
 
 # Mengedit profil (display_name dan bio) user dari halaman profilenya
 def edit_profile(request, user_id):
@@ -29,98 +80,142 @@ def edit_profile(request, user_id):
             return JsonResponse({'status': 'error', 'message': 'There was an error updating the profile'})
     return JsonResponse({'status': 'error', 'message': 'Invalid request method'})
 
-# Render halaman setting untuk Reader
-def user_settings(request):
-    reader = get_object_or_404(Reader, user=request.user)
-    
-    reader_form = ReaderForm(instance=reader)
-    preferences_form = ReaderPreferencesForm(instance=reader.preferences)
 
-    context = {
-        'reader_form': reader_form,
-        'preferences_form': preferences_form
-    }
-    
-    return render(request, 'user_settings.html', context)
+# Menampilkan data JSON readers 
+def show_json(request):
+    all_readers = Reader.objects.all()
+    return HttpResponse(serializers.serialize("json", all_readers), content_type="application/json")
 
-# Mengapply setting untuk Reader
-def apply_settings(request):
-    if request.method == 'POST':
-        reader = get_object_or_404(Reader, user=request.user)
-        reader_form = ReaderForm(request.POST, instance=reader)
-        preferences_form = ReaderPreferencesForm(request.POST, instance=reader.preferences)
-        
-        if reader_form.is_valid() and preferences_form.is_valid():
-            reader_form.save()
-            preferences_form.save()
-            return JsonResponse({'status': 'success', 'message': 'Settings applied successfully'})
-        else:
-            return JsonResponse({'status': 'error', 'message': 'There was an error applying the settings'})
-    return JsonResponse({'status': 'error', 'message': 'Invalid request method'})
+# Menampilkan data JSON specific reader berdasarkan ID 
+def show_json_by_id(request, id):
+    specific_reader = Reader.objects.filter(user__id=id).first()
+    if specific_reader is not None:
+        # Fetch the associated ReaderPreferences
+        reader_preferences = specific_reader.preferences
 
+        # Extract the 'share_reviews' field from ReaderPreferences
+        share_reviews = reader_preferences.share_reviews
+        share_library = reader_preferences.share_library
 
-# Menampilkan hasil searching buku untuk suatu reader di catalog
-def search_catalog(request):
-    query = request.GET.get('q')
-    results = Book.objects.filter(title__icontains=query)
-    return render(request, 'book_search_results.html', {'results': results})
-
-# Menampilkan hasil searching buku untuk suatu reader di library
-def search_library(request):
-    query = request.GET.get('q')
-    user_books = LibraryBook.objects.filter(user=request.user, book__title__icontains=query)
-    return render(request, 'book_search_results.html', {'results': user_books})
-
-# Mengembalikan data akun Reader untuk digunakan dalam bentuk JSON
-def get_reader_data_by_user(request, user_id):
-    reader = get_object_or_404(Reader, user__id=user_id)
-    
-    preferences = reader.preferences
-    
-    reader_data = {
-        'display_name': reader.display_name,
-        'bio': reader.bio,
-        'profile_picture': reader.profile_picture,
-        'personal_library': reader.personal_library,
-        'preferences': {
-            'share_reviews': preferences.share_reviews,
-            'share_library': preferences.share_library
+        # Create a dictionary containing the relevant data
+        response_data = {
+            'id': specific_reader.id,
+            'username': specific_reader.user.username,
+            'bio': specific_reader.bio,
+            'display_name': specific_reader.display_name,
+            'share_reviews': share_reviews,
+            'share_library': share_library,
         }
-    }
-    
-    return JsonResponse(reader_data)
+        print(response_data)
 
-from django.http import JsonResponse
+        return JsonResponse(response_data)
+    else:
+        # Handle the case when the specific_reader is not found
+        return JsonResponse({'error': 'Reader not found'}, status=404)
 
-# Update data reader dengan AJAX 
+# Mendapatkan data JSON readers
+def get_all_readers_json(request):
+    all_readers = Reader.objects.all()
+    return HttpResponse(serializers.serialize('json', all_readers))
+
+# Mengubah profile reader
 @csrf_exempt
-def update_reader_settings_ajax(request):
+def edit_profile_ajax(request, id):
     if request.method == 'POST':
-        if not request.user.is_authenticated:
-            return JsonResponse({'status': 'error', 'message': 'User not authenticated'}, status=401)
-
         display_name = request.POST.get("display_name")
         bio = request.POST.get("bio")
-        profile_picture = request.POST.get("profile_picture")  
-        share_reviews = request.POST.get("share_reviews") == 'true'  
-        share_library = request.POST.get("share_library") == 'true' 
+        print(request.POST)
+        share_reviews = request.POST.get("share_reviews") == "on"
+        share_library = request.POST.get("share_library") == "on"
+        print(request.POST.get("share_reviews"), request.POST.get("share_library"))
+        reader = get_object_or_404(Reader, user__id=id)
+
+        reader.display_name = display_name
+        reader.bio = bio
+    
+        # Dapatkan semua buku di library pengguna
+        print(share_reviews)
+        reader.preferences.share_reviews = share_reviews
+        reader.preferences.share_library = share_library
+        reader.preferences.save()
+
+        #
+        reader.save()
+
+        return HttpResponse("CREATED", status=201)
+
+    return HttpResponseNotFound()
+
+# Mencari di catalog/library/reader
+def search_handler(request):
+    query = request.GET.get('q')
+    search_type = request.GET.get('search_type')
+
+    if search_type == "catalog":
+        results = Book.objects.filter(title__icontains=query)
+        return render(request, 'catalog_search_results.html', {'results': results, 'query': query})
+
+    elif search_type == "library":
+        user_books = LibraryBook.objects.filter(library__reader__user=request.user, book__title__icontains=query)
+        return render(request, 'library_search_results.html', {'results': user_books, 'query': query})
+
+
+    elif search_type == "reader":
+        readers = Reader.objects.filter(Q(display_name__icontains=query) | Q(user__username__icontains=query))
+        return render(request, 'user_search_results.html', {'readers': readers, 'query': query})
+
+    else:
+        return HttpResponse("Invalid search type.")
+
+@login_required(login_url='/login')
+def show_user_library(request):
+    ''' Menampilkan semua buku di library milik user '''
+    
+    # Dapatkan library milik user
+    user_library = get_object_or_404(Library, reader__user=request.user) 
+    
+    # Dapatkan semua LibraryBook yang terkait dengan library user tersebut
+    user_library_books = user_library.mybooks.all()
+    
+    # Dapatkan semua buku dari setiap LibraryBook
+    books_in_library = [lib_book.book for lib_book in user_library_books]
+
+    context = {
+        'page_title': "My Library",
+        'books': books_in_library,
+        'display_name': get_object_or_404(Reader, user=request.user).display_name, 
+    }
+    return render(request, './user_library.html', context)
+
+
+def get_reader_json(request):
+    try:
+        reader = get_object_or_404(Reader, user=request.user)
         
-        try:
-            reader = Reader.objects.get(user=request.user)
-            
-            reader.display_name = display_name
-            reader.bio = bio
-            reader.profile_picture = profile_picture
-            reader.share_reviews = share_reviews
-            reader.share_library = share_library
+        reader_data = {
+            'display_name': reader.display_name,
+            'bio': reader.bio,
+            'profile_picture': reader.profile_picture,
+            # 'personal_library': reader.personal_library,
+            'preferences': {
+                'share_reviews': reader.preferences.share_reviews,
+                'share_library': reader.preferences.share_library
+            }
+        }
 
-            reader.save()
+        print(reader_data)
 
-            return JsonResponse({'status': 'success', 'message': 'Settings updated successfully'})
+        return JsonResponse(reader_data)
+    except Reader.DoesNotExist or ReaderPreferences.DoesNotExist:
+        return JsonResponse({'error': 'Data not found'}, status=404)
+    
+def get_readers_json(request):
+    readers = list(Reader.objects.values())  
+    reader_preferences = list(ReaderPreferences.objects.values())  
 
-        except Reader.DoesNotExist:
-            return JsonResponse({'status': 'error', 'message': 'Reader does not exist'}, status=404)
-        except Exception as e: 
-            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+    combined_data = {
+        'readers': readers,
+        'reader_preferences': reader_preferences
+    }
 
-    return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=400)
+    return JsonResponse(combined_data)
