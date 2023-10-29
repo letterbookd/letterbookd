@@ -1,17 +1,36 @@
+from datetime import datetime
 from django.db import models
-from reader.models import *
+from guest.models import GuestModel
+from django.conf import settings
+from django.contrib.auth.models import User
 
-# TODO
-class ForumPost(models.Model):
-    user = models.ForeignKey(Reader, on_delete=models.CASCADE)
-    message_text = models.TextField()
-    date_posted = models.DateTimeField(auto_now=True)
-    last_edited = models.DateTimeField()
-    replying_to = models.OneToOneField(to="ForumPost", null=True, on_delete=models.CASCADE)
+class Thread(models.Model):
+    title = models.CharField(max_length=200)
+    content = models.TextField()
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(null=True, blank=True)
 
-class ForumThread(models.Model):
-    user = models.ForeignKey(Reader, on_delete=models.CASCADE)
-    title = models.CharField(max_length=255)
-    tags = models.CharField(max_length=255) # separated by semicolon
-    date_started = models.DateTimeField(auto_now_add=True)
-    initial_post = models.OneToOneField(ForumPost, on_delete=models.CASCADE)
+    class Meta:
+        db_table = 'threads'
+
+    def save(self, *args, **kwargs):
+        self.updated_at = datetime.now()
+        super(Thread, self).save(*args, **kwargs)
+
+class Like(models.Model):
+    thread = models.ForeignKey(Thread, on_delete=models.CASCADE)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        db_table = 'likes'
+
+class Reply(models.Model):
+    thread = models.ForeignKey(Thread, on_delete=models.CASCADE, related_name='replies')
+    content = models.TextField()
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'replies'

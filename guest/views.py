@@ -5,6 +5,9 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from forum.views import user_thread_data, user_liked_thread_data
+
 
 from reader.models import *
 from library.models import Library
@@ -62,6 +65,3 @@ def user_logout(request):
     logout(request)
     response = HttpResponseRedirect(reverse('guest:landing_page'))
     return response
-
-def error_404_view(request):
-    return render(request, '404.html', status=404, context={'page_title': 'Uh oh'})

@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4">Thread List <span id="sort-text"></span></h1>
+    <div class="mb-3 d-flex justify-content-between">
+        <div>
+            <button class="btn btn-secondary btn-filter" data-filter="all">All Threads</button>
+            <button class="btn btn-secondary btn-filter" data-filter="newest">Newest Threads</button>
+            <button class="btn btn-secondary btn-filter" data-filter="popular">Popular Threads</button>
+        </div>
+        <div>
+            <a href="{% url 'forum:create_thread' %}" class="btn btn-primary"><i class="bi bi-plus"></i>Thread</a>
+        </div>
+    </div>
+    <ul class="list-group" id="thread-list">
+        {% for thread in threads %}
+            <li class="list-group-item thread-item" data-newest="{{ thread.created_at|date:'c' }}" data-popular="{{ thread.likes }}">
+                    <div class="mb-4 d-flex">
+                        <div class="rounded-circle text-white d-flex justify-content-center align-items-center avatar" style="width:50px; height:50px; font-size: 21pt">{{ thread.created_by.username|first|upper }}</div>
+                        <div class="d-flex flex-column ms-2">
+                            <span class="fw-bold text-dark">{{ thread.created_by.first_name }} {{ thread.created_by.last_name }}</span>
+                            <span class="text-secondary">@{{ thread.created_by.username }}</span>
+                        </div>
+                        
+                    </div>
+                    <a href="{% url 'forum:view_thread' thread.id %}" class="text-decoration-none" style="width: fit-content;">
+                        <h2 class="mb-4">{{ thread.title|title }}</h2>   
+                    </a>
+                    <p class="text-muted">{{ thread.created_at|date:"H.i - d/m/y" }} | {{ thread.likes }} Likes | {{ thread.rep }} Replies</p>
+                    {% if thread.updated_at != null and thread.updated_at > thread.created_at %}
+                        <i class="text-muted">Edited</i>
+                    {% endif %}
+            </li>
+            <div class="modal fade" id="staticBackdrop{{forloop.counter}}" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdrop{{forloop.counter}}Label" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="staticBackdrop{{forloop.counter}}Label">Delete Confirmation</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>This thread will be deleted immediately. You can't undo this action.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No, Cancel</button>
+                        <a href="{% url 'forum:delete_thread' thread.id %}">
+                            <button type="button" class="btn btn-primary">Yes, sure</button>
+                        </a>
+                    </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </ul>    
+</div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    function getRandomColor() {
+        var letters = '0123456789ABCDEF';
+        var color = '#';
+        for (var i = 0; i < 6; i++) {
+            color += letters[Math.floor(Math.random() * 16)];
+        }
+        return color;
+    }
+
+    $(document).ready(function () {
+        // Set random background colors for avatars
+        $('.avatar').each(function () {
+            var randomColor = getRandomColor();
+            $(this).css('background-color', randomColor);
+        });
+
+        const defaultData = $('.thread-item');
+    
+        $(".btn-filter").on("click", function () {
+            var filter = $(this).data("filter");
+    
+            // Show all threads by default
+            $(".thread-item").show();
+    
+            if (filter === "newest") {
+
+                $('#sort-text').text('- Newest');
+                // Sort threads by the 'data-newest' attribute
+                var sortedThreads = $(".thread-item").sort(function (a, b) {
+                    return new Date(Date.parse($(b).data("newest"))).getTime() - new Date(Date.parse($(a).data("newest"))).getTime();
+                });
+    
+                // Remove all items from the ul with the id "thread-list"
+                $("#thread-list").empty();
+    
+                // Append the sorted threads to the ul with the id "thread-list"
+                sortedThreads.each(function () {
+                    $("#thread-list").append(this);
+                });
+            } else if (filter === "popular") {
+                $('#sort-text').text('- Popular');
+                // Sort threads by the 'data-popular' attribute
+                
+                var sortedThreads = $(".thread-item").sort(function (a, b) {
+                    return parseInt($(b).data("popular")) - parseInt($(a).data("popular"));
+                });
+    
+                // Remove all items from the ul with the id "thread-list"
+                $("#thread-list").empty();
+    
+                // Append the sorted threads to the ul with the id "thread-list"
+                sortedThreads.each(function () {
+                    $("#thread-list").append(this);
+                });
+            } else {
+                $('#sort-text').text('');
+                // Remove all items from the ul with the id "thread-list"
+                $("#thread-list").empty();
+
+                // Show all threads
+                defaultData.each(function () {
+                    $("#thread-list").append(this);
+                });
+            }
+        });
+    });
+    
+
+</script>
+
+
+{% endblock %}
