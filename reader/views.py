@@ -63,8 +63,6 @@ def show_profile(request, id):
 
 
 
-
-
 # Mengembalikan halaman hasil searching Reader dengan display_name
 def search_reader(request, display_name):
     readers = Reader.objects.filter(display_name__icontains=display_name)
