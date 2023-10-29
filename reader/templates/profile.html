@@ -98,16 +98,22 @@
                     </div>
                     <div class="mb-3">
                         <label for="bio" class="col-form-label">Bio:</label>
-                        <textarea class="form-control" id="bio" name="bio" placeholder="Bio" value="{{ reader.bio }}"></textarea>
+                        <!-- <textarea class="form-control" id="bio" name="bio" placeholder="Bio" value="{{ reader.bio }}"></textarea> -->
+                        <textarea class="form-control" id="bio" name="bio" placeholder="Bio">{{ reader.bio }}</textarea>
+
                     </div>
                     <h3>Preferences</h3>
                     <div class="mb-3 form-check">
-                        <input type="checkbox" class="form-check-input" name="inputShareReviewPreference" id="inputShareReviewPreference" value="on" {% if preferences_form.share_reviews.value %}checked{% endif %}>
-                        <label class="form-check-label" for="inputShareReviewPreference">Share Reviews</label>
+                        <form autocomplete="off">
+                            <input type="checkbox" class="form-check-input" name="inputShareReviewPreference" id="inputShareReviewPreference" value="on" {% if preferences_form.share_reviews.value %}checked{% endif %}>
+                            <label class="form-check-label" for="inputShareReviewPreference">Share Reviews</label>
+                        </form>
                     </div>
                     <div class="mb-3 form-check">
-                        <input type="checkbox" class="form-check-input" name="inputShareLibraryPreference" id="inputShareLibraryPreference" {% if preferences_form.share_library.value %}checked{% endif %}>
-                        <label class="form-check-label" for="inputShareLibraryPreference">Share Library</label>
+                        <form autocomplete="off"></form>
+                            <input type="checkbox" class="form-check-input" name="inputShareLibraryPreference" id="inputShareLibraryPreference" {% if preferences_form.share_library.value %}checked{% endif %}>
+                            <label class="form-check-label" for="inputShareLibraryPreference">Share Library</label>
+                        </form>
                     </div>
                 </form>
             </div>
@@ -252,9 +258,14 @@
             document.querySelector("p#bio").textContent = updatedReader.bio;
 
             const shareLibraryPreference = document.getElementById('inputShareLibraryPreference');
+            const shareReviewPreference = document.getElementById('inputShareReviewPreference');
             const shareLibraryStatus = document.getElementById('shareLibraryStatus');
             const librarySection = document.getElementById('librarySection');
-            
+
+            // Update the checkbox states
+            shareLibraryPreference.checked = updatedReader.preferences.share_library;
+            shareReviewPreference.checked = updatedReader.preferences.share_reviews;
+
             if (shareLibraryPreference.checked) {
                 shareLibraryStatus.textContent = "Sharing Library";
                 librarySection.style.display = "block";
@@ -264,6 +275,7 @@
             }
         }
     }
+
 
     refreshProfile();
 

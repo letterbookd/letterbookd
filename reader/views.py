@@ -96,8 +96,11 @@ def edit_profile_ajax(request, id):
         bio = request.POST.get("bio")
         
         # NYOBA BARU
-        share_reviews = request.POST.get("share_reviews") == "true"
-        share_library = request.POST.get("share_library") == "true"
+        #share_reviews = request.POST.get("share_reviews") == "true"
+        #share_library = request.POST.get("share_library") == "true"
+        share_reviews = request.POST.get("inputShareReviewPreference") == "on"
+        share_library = request.POST.get("inputShareLibraryPreference") == "on"
+
 
         #
 
