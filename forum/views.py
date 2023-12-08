@@ -2,10 +2,8 @@ from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect
 from django.db.models import Count
-from .models import Thread, Reply, Like
-from .forms import ThreadForm, RepliesForm, DivErrorList
-from django.contrib.auth import get_user_model
-from guest.models import GuestModel
+from forum.models import Thread, Reply, Like
+from forum.forms import ThreadForm, RepliesForm, DivErrorList
 from django.http import JsonResponse
 import json
 from django.views.decorators.csrf import csrf_exempt
@@ -65,7 +63,30 @@ def create_thread(request):
     else:
         form = ThreadForm()
 
-    return render(request, 'create_thread.html', {'form': form})
+    return render(request, 'create_thread.html', {'page_title': 'Create Thread', 'form': form})
+
+
+@csrf_exempt
+def create_thread_json(request):
+    response_data = {'status': False}
+
+    if request.method == 'POST':
+        data = json.loads(request.body)
+
+        print(data)
+        new_thread = Thread.objects.create(
+            title=data["title"],
+            content=data["content"],
+
+        )
+        new_thread.created_by = get_user(request)
+        new_thread.updated_at = None
+
+        new_thread.save()
+
+        response_data['status'] = True
+
+    return JsonResponse(response_data)
 
 
 @csrf_exempt
@@ -151,7 +172,7 @@ def edit_thread(request, thread_id):
                 return redirect('/forum', thread_id=thread.id)
         else:
             form = ThreadForm(instance=thread)
-        return render(request, 'edit_thread.html', {'form': form})
+        return render(request, 'edit_thread.html', {'page_title': 'Edit Thread', 'form': form})
     else:
         return redirect('/forum', thread_id=thread.id)
 

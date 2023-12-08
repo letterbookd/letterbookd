@@ -3,18 +3,19 @@
 {% block content %}
 
 <!----------------------------------------------------------------------------------------------------------->
+<div id="book-id" value="{{ book.pk }}"></div>
 
-<div class="border border-3 p-3">
+<div class="border border-3 rounded-3 p-5">
     <div class="d-flex">
         <div class="thumbnail">
             <img src="{{ book.thumbnail }}" style="width:auto ; height:250px"></img>
         </div>
-        <div class="ms-3">
+        <div class="ms-4">
             <div class="mb-1">
                 <h2>{{ book.title }}</h2>
             </div>
             <div class="mb-1">
-                <h4>{{ authors }}</h4>
+                <h4>by {{ authors }}</h4>
             </div>
             <div class="mb-1">
                 <label>ISBN: {{ book.isbn13 }}</label>
@@ -32,25 +33,57 @@
                 <label>Overall rating: {{ book.overall_rating }}/5</label>
             </div>
             <div class="mb-1">
-                <label>{{ book.favorites_count }} people added this book to their favorite.</label>
+                <label id="favorite-count">{{ book.favorites_count }} people added this book to their favorite.</label>
             </div>
         </div>
     </div>
 
-    <div class="mt-3">
-        <label>Description:</label>
+    <div class="mt-4">
         <p>{{ book.description }}</p>
     </div>
 
     <hr>
 
     <div>
-        <h3>Reviews</h3>
-        <button class="btn btn-primary">Add Review</button>
+        <button class="btn btn-primary" onclick="showReviewsPage()">
+            See reviews
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-box-arrow-up-right ps-1 pb-1" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5z"/>
+                <path fill-rule="evenodd" d="M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0v-5z"/>
+            </svg>
+        </button>
     </div>
 </div>
 
 <script>
+    var book_id = document.getElementById("book-id").getAttribute("value")
+    
+    function showReviewsPage(){
+        window.location.href = "{% url 'review:show_reviews' '123' %}".replace('123', book_id)
+    }
+
+    //reload kalo teken back button di browser
+    //credit: https://stackoverflow.com/questions/43043113/how-to-force-reloading-a-page-when-using-browser-back-button
+    window.addEventListener("pageshow", function(event) {
+        var historyTraversal = event.persisted || ( typeof window.performance != "undefined" && window.performance.navigation.type === 2 );
+        if ( historyTraversal ) {
+            window.location.reload();
+        }
+    });
+
+    async function getFavoritedLibraryBooks(){
+        return fetch("{% url 'catalog:get_favorited_library_book' '123'%}".replace('123', book_id)).then((res) => res.json())
+    }
+
+    async function handleFavoritesCount(){
+        const favoritedLibraryBooks = await getFavoritedLibraryBooks()
+
+        var favoritesCount = favoritedLibraryBooks.length
+        document.getElementById("favorite-count").innerHTML = `${favoritesCount} people added this book to their favorite.`
+    }
+
+    handleFavoritesCount()
+
 </script>
 
 {% endblock content %}

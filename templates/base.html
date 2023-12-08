@@ -25,11 +25,11 @@
     </head>
 
     <body class="min-vh-100">
-        <header>
+        <header class="sticky-top">
             {% include 'navbar.html' %}
         </header>
 
-        <main class="pt-md-4 mx-2">
+        <main class="pt-md-4 pt-3 mx-2">
             <div class="container-xxl">
             {% block content %}
             {% endblock content %}
