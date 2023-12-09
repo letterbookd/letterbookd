@@ -45,6 +45,32 @@ def get_related_books(request):
 
     return HttpResponse(serializers.serialize('json', book_items))
 
+def get_related_books_json(request):
+    library_items = get_object_or_404(Library, reader__user=request.user).mybooks.all()
+    book_items = Book.objects.filter(librarybook__in=library_items)
+
+    library = []
+    for book in book_items:
+        library.append({"model": 'catalog.book', 
+                        "pk": book.pk, 
+                        "fields": {"isbn13": book.isbn13, 
+                                    "title": book.title, 
+                                    "authors": book.authors, 
+                                    "categories": book.categories, 
+                                    "thumbnail": book.thumbnail, 
+                                    "description": book.description, 
+                                    "published_year": book.published_year, 
+                                    "page_count": book.page_count, 
+                                    "overall_rating": book.overall_rating, 
+                                    "favorites_count": book.favorites_count}
+                                })
+
+    return JsonResponse({'library':library})
+
+def get_username(request):
+    username = request.user.username
+    return JsonResponse({'username':username})
+
 #====================================================================================
 @login_required(login_url='/login')
 def show_reader_catalog(request):
