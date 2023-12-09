@@ -13,6 +13,7 @@ from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404
+import json
 
 def book_in_library(request, id):
     reader = Reader.objects.get(user=request.user)
@@ -171,3 +172,28 @@ def show_json(request):
 def show_json_by_id(request, id):
     data = Book.objects.filter(pk=id)
     return HttpResponse(serializers.serialize("json", data), content_type="application/json")
+
+@csrf_exempt
+def add_book_flutter(request):
+    if request.method == 'POST':
+        
+        data = json.loads(request.body)
+
+        new_book = Book.objects.create(
+            isbn13 = int(data["isbn13"]),
+            title = data["title"],
+            authors = data["authors"],
+            categories = data["categories"],
+            thumbnail = data["thumbnail"],
+            description = data["description"],
+            published_year = int(data["publised_year"]),
+            page_count = int(data["page_count"]),
+            overall_rating = 0.0,
+            favorites_count = 0,
+        )
+
+        new_book.save()
+
+        return JsonResponse({"status": "success"}, status=200)
+    else:
+        return JsonResponse({"status": "error"}, status=401)

@@ -18,4 +18,5 @@ urlpatterns = [
 
     path('get-username/', get_username, name='get_username'),
     path('get-related-books-json/', get_related_books_json, name='get_related_books_json'),
+    path('add-book-flutter/', add_book_flutter, name='add_book_flutter'),
 ]
