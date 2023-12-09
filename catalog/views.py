@@ -197,3 +197,56 @@ def add_book_flutter(request):
         return JsonResponse({"status": "success"}, status=200)
     else:
         return JsonResponse({"status": "error"}, status=401)
+    
+@csrf_exempt
+def edit_book_flutter(request):
+    if request.method == 'POST':
+
+        data = json.loads(request.body)
+        
+        id = int(data["pk"])
+
+        book = Book.objects.get(pk = id)
+
+        book.isbn13 = int(data["isbn13"])
+        book.title = data["title"]
+        book.authors = data["authors"]
+        book.categories = data["categories"]
+        book.thumbnail = data["thumbnail"]
+        book.description = data["description"]
+        book.published_year = int(data["publised_year"])
+        book.page_count = int(data["page_count"])
+        book.overall_rating = 0.0
+        book.favorites_count = 0
+
+        book.save()
+
+        book_data = [{"model": 'catalog.book', 
+                    "pk": book.pk, 
+                    "fields": {"isbn13": book.isbn13, 
+                                "title": book.title, 
+                                "authors": book.authors, 
+                                "categories": book.categories, 
+                                "thumbnail": book.thumbnail, 
+                                "description": book.description, 
+                                "published_year": book.published_year, 
+                                "page_count": book.page_count, 
+                                "overall_rating": book.overall_rating, 
+                                "favorites_count": book.favorites_count}
+                            }]
+
+        return JsonResponse({"status": "success", "book_data": book_data}, status=200)
+    else:
+        return JsonResponse({"status": "error"}, status=401)
+    
+@csrf_exempt
+def delete_book_flutter(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        id = int(data["id"])
+
+        Book.objects.get(pk=id).delete()
+
+        return JsonResponse({"status": "success"}, status=200)
+    else:
+        return JsonResponse({"status": "error"}, status=401)
