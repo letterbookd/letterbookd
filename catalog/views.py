@@ -216,8 +216,8 @@ def edit_book_flutter(request):
         book.description = data["description"]
         book.published_year = int(data["publised_year"])
         book.page_count = int(data["page_count"])
-        book.overall_rating = 0.0
-        book.favorites_count = 0
+        book.overall_rating = book.overall_rating
+        book.favorites_count = book.favorites_count
 
         book.save()
 
