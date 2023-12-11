@@ -98,7 +98,16 @@ def api_update_book_status(request, id):
 
     reader_library = get_object_or_404(Library, reader__user=request.user)
     library_book = get_object_or_404(LibraryBook, book__id=id, library=reader_library)
-    isFavorited = bool(request.POST.get('isFavorited', library_book.is_favorited))
+    
+    isFavorited = library_book.is_favorited
+    if (request.POST.get('isFavorited') is not None):
+        isFavorited = request.POST.get('isFavorited')
+        if isFavorited == u'true':
+            isFavorited = True
+        if isFavorited == u'false':
+            isFavorited = False
+        print(isFavorited)
+
     trackingStatus = int(request.POST.get('trackingStatus', library_book.tracking_status))
 
     if library_book:
