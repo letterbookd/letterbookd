@@ -1,6 +1,6 @@
+import json
 from django.http import HttpResponse, HttpResponseNotFound, JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
-
 from review.models import Review
 from .models import Reader, ReaderPreferences
 from .forms import ReaderForm, ReaderPreferencesForm, UserProfileForm
@@ -11,6 +11,10 @@ from django.views.decorators.csrf import csrf_exempt
 from django.core import serializers
 from django.db.models import Q
 from django.contrib.auth.decorators import login_required
+from django.db import transaction
+
+from .serializers import ReaderSerializer
+
 
 
 # Menampilkan halaman profile Reader
@@ -106,7 +110,6 @@ def show_json_by_id(request, id):
             'share_reviews': share_reviews,
             'share_library': share_library,
         }
-        print(response_data)
 
         return JsonResponse(response_data)
     else:
@@ -124,17 +127,17 @@ def edit_profile_ajax(request, id):
     if request.method == 'POST':
         display_name = request.POST.get("display_name")
         bio = request.POST.get("bio")
-        print(request.POST)
+
         share_reviews = request.POST.get("share_reviews") == "on"
         share_library = request.POST.get("share_library") == "on"
-        print(request.POST.get("share_reviews"), request.POST.get("share_library"))
+        
         reader = get_object_or_404(Reader, user__id=id)
 
         reader.display_name = display_name
         reader.bio = bio
     
         # Dapatkan semua buku di library pengguna
-        print(share_reviews)
+        
         reader.preferences.share_reviews = share_reviews
         reader.preferences.share_library = share_library
         reader.preferences.save()
@@ -190,24 +193,24 @@ def show_user_library(request):
 
 def get_reader_json(request):
     try:
-        reader = get_object_or_404(Reader, user=request.user)
-        
+        username = request.headers['username']
+        user = get_object_or_404(User, username=username)
+        reader = get_object_or_404(Reader, user__id=user.id)
+
         reader_data = {
             'display_name': reader.display_name,
             'bio': reader.bio,
             'profile_picture': reader.profile_picture,
-            # 'personal_library': reader.personal_library,
             'preferences': {
                 'share_reviews': reader.preferences.share_reviews,
                 'share_library': reader.preferences.share_library
             }
         }
-
-        print(reader_data)
-
         return JsonResponse(reader_data)
     except Reader.DoesNotExist or ReaderPreferences.DoesNotExist:
         return JsonResponse({'error': 'Data not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({"status": "error", "message": str(e)})
     
 def get_readers_json(request):
     readers = list(Reader.objects.values())  
@@ -219,3 +222,64 @@ def get_readers_json(request):
     }
 
     return JsonResponse(combined_data)
+
+
+def search_readers_api(request):
+    def format_reader_data(reader):
+        return {
+        'display_name': reader.display_name,
+        'bio': reader.bio,
+        'profile_picture': reader.profile_picture,
+        'preferences': {
+            'share_reviews': reader.preferences.share_reviews,
+            'share_library': reader.preferences.share_library
+        }
+    }
+    try:
+        query = request.GET.get('q')
+        if query:
+            readers = Reader.objects.filter(Q(display_name__icontains=query) | Q(user__username__icontains=query))
+            serializer = [format_reader_data(reader) for reader in readers]
+
+            return JsonResponse(serializer, safe=False)
+        else:
+            return JsonResponse({'error': 'Invalid or empty query'})
+    except json.JSONDecodeError:
+        return JsonResponse({"status": "error", "message": "Invalid JSON data"})
+    except Exception as e:
+        return JsonResponse({"status": "error", "message": str(e)})
+
+@csrf_exempt
+def update_profile(request):
+    if request.method != 'POST':
+        return JsonResponse({"status": "error", "message": "Invalid request"})
+
+    try:
+        data = json.loads(request.body)
+        print("Received data:", data)
+
+        with transaction.atomic():
+            user = User.objects.get(username=data.get('username'))
+
+            share_reviews = data.get("share_reviews", False)
+            share_library = data.get("share_library", False)
+            
+            reader_profile = get_object_or_404(Reader, user__id=user.id)
+
+            reader_profile.display_name = data.get('display_name', reader_profile.display_name)
+            reader_profile.bio = data.get('bio', reader_profile.bio)
+            
+            reader_profile.preferences.share_reviews = share_reviews
+            reader_profile.preferences.share_library = share_library
+            reader_profile.preferences.save()
+
+            reader_profile.save()
+
+        return JsonResponse({"status": "success", "message": "Profile updated successfully"})
+
+    except User.DoesNotExist:
+        return JsonResponse({"status": "error", "message": "User not found"})
+    except json.JSONDecodeError:
+        return JsonResponse({"status": "error", "message": "Invalid JSON data"})
+    except Exception as e:
+        return JsonResponse({"status": "error", "message": str(e)})
