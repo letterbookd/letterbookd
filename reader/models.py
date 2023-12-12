@@ -7,7 +7,7 @@ class ReaderPreferences(models.Model):
     share_reviews = models.BooleanField(default=True)
     share_library = models.BooleanField(default=False)
 
-    def __str__(self) -> str:
+    def __str__(self):
         return self.reader.display_name + "'s Reader preferences"
 
 class Reader(models.Model):
@@ -18,5 +18,5 @@ class Reader(models.Model):
     personal_library = models.OneToOneField(Library, on_delete=models.CASCADE, null=True)
     preferences = models.OneToOneField(ReaderPreferences, on_delete=models.CASCADE, null=True)
 
-    def __str__(self) -> str:
+    def __str__(self):
         return self.display_name + "'s Reader account"
