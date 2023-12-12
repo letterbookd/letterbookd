@@ -22,6 +22,7 @@ class Thread(models.Model):
     def __str__(self) -> str:
         return f"\"{self.title}\" THREAD by {self.created_by.username}"
 
+
 class Like(models.Model):
     thread = models.ForeignKey(Thread, on_delete=models.CASCADE)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -33,11 +34,13 @@ class Like(models.Model):
     def __str__(self) -> str:
         return f"\"{self.thread.title}\" LIKE by {self.created_by.username}"
 
+
 class Reply(models.Model):
     thread = models.ForeignKey(
         Thread, on_delete=models.CASCADE, related_name='replies')
     content = models.TextField()
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_by = models.ForeignKey(
+        User, on_delete=models.CASCADE, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
