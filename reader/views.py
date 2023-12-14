@@ -283,3 +283,22 @@ def update_profile(request):
         return JsonResponse({"status": "error", "message": "Invalid JSON data"})
     except Exception as e:
         return JsonResponse({"status": "error", "message": str(e)})
+
+# ======================
+
+def reader_library_api(request, username):
+    # Dapatkan objek reader berdasarkan username
+    reader = get_object_or_404(Reader, user__username=username)
+
+    # Dapatkan semua buku di library pengguna
+    library_items = LibraryBook.objects.filter(library__reader=reader)
+
+    # Format data buku menjadi JSON
+    books_json = [{
+        'title': item.book.title,
+        'authors': item.book.authors,
+        'thumbnail': item.book.thumbnail if item.book.thumbnail else None,  
+    } for item in library_items]
+
+    return JsonResponse(books_json, safe=False)
+
