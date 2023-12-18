@@ -91,7 +91,7 @@ def api_get_library(request):
     ''' Mengembalikan JSON data library milik user '''
     library_items = None
     try:
-        library_items = Library.objects.get(reader__user=request.user)
+        library_items = Library.objects.get(reader__user=request.user).mybooks.all()
     except Library.DoesNotExist:
         return JsonResponse({"status": False, "message": "User is not a Reader"}, status=403)
 
@@ -149,7 +149,6 @@ def api_update_book_status(request, id):
             isFavorited = True
         if isFavorited == u'false':
             isFavorited = False
-        print(isFavorited)
 
     trackingStatus = int(request.POST.get('trackingStatus', library_book.tracking_status))
 
