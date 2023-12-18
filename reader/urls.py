@@ -18,7 +18,7 @@ urlpatterns = [
     path('update-profile/', update_profile, name='update_profile'),
     
     # ======
-    # path('reader-library-api/<int:id>/', reader_library_api, name='reader_library_api'),
     path('reader-library-api/<str:username>/', reader_library_api, name='reader_library_api'),
+    path('reader-review-api/<str:username>/', reader_review_api, name='reader_review_api'),
 
 ]

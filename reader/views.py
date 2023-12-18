@@ -302,3 +302,26 @@ def reader_library_api(request, username):
 
     return JsonResponse(books_json, safe=False)
 
+def reader_review_api(request, username):
+    try:
+        # Dapatkan objek reader berdasarkan username
+        reader = get_object_or_404(Reader, user__username=username)
+
+        # Dapatkan semua review untuk reader tertentu
+        reviews = Review.objects.filter(user=reader).select_related('book')
+
+        # Format data review menjadi JSON
+        reviews_json = [{
+            'id': review.id,
+            'book_title': review.book.title,
+            'stars_rating': review.stars_rating,
+            'status_on_review': review.status_on_review,
+            'date_posted': review.date_posted.strftime('%Y-%m-%d %H:%M:%S'),
+            'review_text': review.review_text
+        } for review in reviews]
+
+        return JsonResponse(reviews_json, safe=False)
+    except Reader.DoesNotExist:
+        return JsonResponse({'error': 'Reader not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
