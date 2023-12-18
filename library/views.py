@@ -128,9 +128,10 @@ def api_get_library(request):
 
 @require_POST
 @csrf_exempt
-def api_update_book_status(request, id):
+def api_update_book_status(request):
     ''' Mengupdate status tracking buku yang ada di library '''
     reader_library, library_book = None, None
+    book_id = int(request.POST.get("book_id", -1))
 
     try:
         reader_library = Library.objects.get(reader__user=request.user)
@@ -138,7 +139,7 @@ def api_update_book_status(request, id):
         return JsonResponse({"status": False, "message": "User is not a Reader"}, status=403)
     
     try:
-        library_book = LibraryBook.objects.get(book__id=id, library=reader_library)
+        library_book = LibraryBook.objects.get(book__id=book_id, library=reader_library)
     except LibraryBook.DoesNotExist:
         return JsonResponse({"status": False, "message": "Book isn't in Reader's library"}, status=404)
         
@@ -199,9 +200,10 @@ def api_add_book(request):
 
 @require_POST
 @csrf_exempt
-def api_remove_book(request, id):
+def api_remove_book(request):
     ''' Mengeluarkan buku dari library milik user '''
     reader_library, book_to_delete = None, None
+    book_id = int(request.POST.get("book_id", -1))
 
     try:
         reader_library = Library.objects.get(reader__user=request.user)
@@ -209,7 +211,7 @@ def api_remove_book(request, id):
         return JsonResponse({"status": False, "message": "User is not a Reader"}, status=403)
     
     try:
-        book_to_delete = LibraryBook.objects.get(book__id=id, library=reader_library)
+        book_to_delete = LibraryBook.objects.get(book__id=book_id, library=reader_library)
     except LibraryBook.DoesNotExist:
         return JsonResponse({"status": False, "message": "Book isn't in Reader's library"}, status=404)
         
