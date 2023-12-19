@@ -2,7 +2,7 @@ import json
 from django.shortcuts import render, redirect, get_object_or_404
 from reader.models import Reader
 from review.models import Review
-
+from django.contrib.auth.models import User
 from library.models import Library, LibraryBook 
 from catalog.models import Book
 
@@ -141,13 +141,25 @@ def create_review_ajax(request, book_id):
 #------------------------------------------Flutter Function-----------------------------------#
 def show_review_flutter(request):
     data = Review.objects.all()
+    data = data[::-1]
+    return HttpResponse(serializers.serialize("json", data), content_type="application/json")
+
+def show_review_flutter_by_user(request):
+    reader = Reader.objects.get(user=request.user)
+    data = Review.objects.filter(user=reader)
+    data = data[::-1]
+    return HttpResponse(serializers.serialize("json", data), content_type="application/json")
+
+def show_review_by_book_flutter(request, id_buku):
+    book = Book.objects.get(pk=id_buku)
+    data = Review.objects.filter(book=book)
     return HttpResponse(serializers.serialize("json", data), content_type="application/json")
 
 @csrf_exempt
 def create_review_flutter(request):
     if request.method == "POST":
-        book = review.book
         data = json.loads(request.body)
+        book = Book.objects.get(pk=data["book_id"])
         # Isi data dr flutter kyk gini
         # data = {
         #     'user':
@@ -161,7 +173,7 @@ def create_review_flutter(request):
             library_book= LibraryBook.objects.get(library=reader_library, book=book)
             status_on_review = library_book.tracking_status
         except LibraryBook.DoesNotExist:
-            status_on_review = 0
+            status_on_review = "UNTRACKED"
 
         new_review = Review.objects.create(
             user = Reader.objects.get(user = request.user),
@@ -183,10 +195,7 @@ def create_review_flutter(request):
         book.save()
         return JsonResponse({
             "status": "success",
-            "user": Reader.objects.get(user = request.user),
-            "book": Book.objects.get(pk = data["book_id"]),
             "stars_rating": data["stars_rating"],
-            "status_on_review": data["status_on_review"],
             "review_text": data["review_text"],
         }, status=200)
     
@@ -194,29 +203,32 @@ def create_review_flutter(request):
 
 @csrf_exempt
 def delete_review_flutter(request):
-    if request.method == 'POST':
-        book = review.book
+    try:
         data = json.loads(request.body)
-        # Isi data dr flutter kyk gini
-        # data = {
-        #     "review_id": 
-        # }
+        review_id = data.get("review_id")
+        review = get_object_or_404(Review, pk=review_id) 
+        book = review.book
 
-        review = Review.objects.get(pk = data["review_id"])
         review.delete()
+
         reviews = Review.objects.filter(book=book)
-        total_rating = 0
-        total_reviews = len(reviews)
+        if reviews.exists():
+            total_rating = sum(review.stars_rating for review in reviews)
+            book.overall_rating = round((total_rating / reviews.count()), 2)
+        else:
+            book.overall_rating = 0  # Atau set nilai default lainnya
 
-        for review in reviews:
-            total_rating += review.stars_rating
-
-        book.overall_rating = round((total_rating / total_reviews), 2)
         book.save()
-        return JsonResponse({"status": True,}, status=200)
-    
-    return JsonResponse({"status": False}, status=500)
+        return JsonResponse({"status": "success"}, status=200)
 
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "Invalid JSON"}, status=400)
+    except Review.DoesNotExist:
+        return JsonResponse({"error": "Review not found"}, status=404)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+
+@csrf_exempt
 def update_review_flutter(request):
     if request.method == 'POST':
         data = json.loads(request.body)
@@ -234,3 +246,20 @@ def update_review_flutter(request):
         return JsonResponse({"status": True,}, status=200)
     
     return JsonResponse({"status": False}, status=500)
+
+def get_username_by_id(request, user_id):
+    try:
+        user = User.objects.get(id=user_id)
+        username = user.username
+        return JsonResponse({'username': username})
+    except User.DoesNotExist:
+        return HttpResponseNotFound("User not found")
+    
+def get_book_title_by_id(request, id_buku):
+    try:
+        book = Book.objects.get(id=id_buku)
+        title = book.title
+        return JsonResponse({'title': title})
+    except User.DoesNotExist:
+        return HttpResponseNotFound("User not found")
+
