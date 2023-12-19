@@ -176,10 +176,20 @@ def api_add_book(request):
         except Library.DoesNotExist:
             return JsonResponse({"status": False, "message": "User is not a Reader"}, status=403)
         
+        isFavorited = False;
+        if (request.POST.get('isFavorited') is not None):
+            isFavorited = request.POST.get('isFavorited')
+            if isFavorited == u'true':
+                isFavorited = True
+            if isFavorited == u'false':
+                isFavorited = False
+
+        trackingStatus = int(request.POST.get('trackingStatus', 1))
+
         bookForm = LibraryBookForm({
             'book': Book.objects.get(id=book_id),
-            'tracking_status': 1,
-            'is_favorited': False,
+            'tracking_status': trackingStatus,
+            'is_favorited': isFavorited,
         })
 
         print("abababab")
