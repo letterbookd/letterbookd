@@ -1,15 +1,17 @@
+import json
 from django.shortcuts import render, get_object_or_404
 
 from reader.models import Reader
 from library.models import Library, LibraryBook
 from library.forms import LibraryBookForm, UpdateLibBookForm
-from django.db import IntegrityError
+from django.core import serializers
+from django.views.decorators.csrf import csrf_exempt
 from catalog.models import Book
 from django.http import HttpResponse, HttpResponseNotFound, JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST, require_GET
 
-# Create your views here.
+## Library views
 @login_required(login_url='/login')
 def show_library(request):
     ''' Menampilkan library milik user '''
@@ -82,3 +84,162 @@ def remove_book(request, id):
     book_to_delete.delete()
     
     return HttpResponse(b"DELETED", status=201)
+
+## Flutter API endpoints
+@require_GET
+def api_get_library(request):
+    ''' Mengembalikan JSON data library milik user '''
+    library_items = None
+    try:
+        library_items = Library.objects.get(reader__user=request.user).mybooks.all()
+    except Library.DoesNotExist:
+        return JsonResponse({"status": False, "message": "User is not a Reader"}, status=403)
+
+    book_items = Book.objects.filter(librarybook__in=library_items)
+
+    library = [
+        [{
+            "model": 'library.librarybook',
+            "pk": libbook.pk,
+            "fields": {"library": libbook.library.pk,
+                       "book": libbook.book.pk,
+                       "tracking_status": libbook.tracking_status,
+                       "is_favorited": libbook.is_favorited,
+                       "is_reviewed": libbook.is_reviewed
+                       }
+        } for libbook in library_items],
+        [{
+            "model": 'catalog.book',
+            "pk": book.pk,
+            "fields": {"isbn13": book.isbn13,
+                       "title": book.title,
+                       "authors": book.authors,
+                       "categories": book.categories,
+                       "thumbnail": book.thumbnail,
+                       "description": book.description,
+                       "published_year": book.published_year,
+                       "page_count": book.page_count,
+                       "overall_rating": book.overall_rating,
+                       "favorites_count": book.favorites_count,
+                       }
+        } for book in book_items],
+    ]
+    return JsonResponse({"library": library}, safe=False)
+
+@require_POST
+@csrf_exempt
+def api_update_book_status(request):
+    ''' Mengupdate status tracking buku yang ada di library '''
+    reader_library, library_book = None, None
+    book_id = int(request.POST.get("book_id", -1))
+
+    try:
+        reader_library = Library.objects.get(reader__user=request.user)
+    except Library.DoesNotExist:
+        return JsonResponse({"status": False, "message": "User is not a Reader"}, status=403)
+    
+    try:
+        library_book = LibraryBook.objects.get(book__id=book_id, library=reader_library)
+    except LibraryBook.DoesNotExist:
+        return JsonResponse({"status": False, "message": "Book isn't in Reader's library"}, status=404)
+    
+    trackingStatus = int(request.POST.get('trackingStatus', library_book.tracking_status))
+    isFavorited = library_book.is_favorited
+
+    if (request.POST.get('isFavorited') is not None):
+        isFavorited = request.POST.get('isFavorited')
+        if isFavorited == u'true':
+            isFavorited = True
+        if isFavorited == u'false':
+            isFavorited = False
+
+    bookForm = UpdateLibBookForm({
+            'tracking_status': trackingStatus,
+            'is_favorited': isFavorited,
+        }, instance=library_book)
+    
+    if bookForm.is_valid():
+        bookForm.save()
+
+        # update book favorite count
+        if isFavorited & (isFavorited == library_book.is_favorited):
+            library_book.book.favorites_count += 1
+        elif (not isFavorited) & (isFavorited == library_book.is_favorited):
+            library_book.book.favorites_count -= 1
+        library_book.book.save()
+
+        return JsonResponse({"status": True, "message": "Updated!"}, status=201)
+    
+    return JsonResponse({"status": False, "message": "Cannot find book in library"}, status=400)
+
+@csrf_exempt
+def api_add_book(request):
+    ''' Menambah buku kedalam library milik user '''
+
+    if request.method == 'POST':
+        book_id = int(request.POST.get("book_id", -1))
+        if (book_id) == -1:
+            return JsonResponse({"status": False, "message": "Book doesn't exist"}, status=404)
+
+        reader_library = None
+        try:
+            reader_library = Library.objects.get(reader__user=request.user)
+        except Library.DoesNotExist:
+            return JsonResponse({"status": False, "message": "User is not a Reader"}, status=403)
+        
+        isFavorited = False;
+        if (request.POST.get('isFavorited') is not None):
+            isFavorited = request.POST.get('isFavorited')
+            if isFavorited == u'true':
+                isFavorited = True
+            if isFavorited == u'false':
+                isFavorited = False
+
+        trackingStatus = int(request.POST.get('trackingStatus', 1))
+        selectedBook = Book.objects.get(id=book_id)
+
+        bookForm = LibraryBookForm({
+            'book': selectedBook,
+            'tracking_status': trackingStatus,
+            'is_favorited': isFavorited,
+        })
+
+        if bookForm.is_valid():
+            book_to_add = bookForm.save(commit=False)
+            try:
+                LibraryBook.objects.get(library=reader_library, book=book_to_add.book)
+            except LibraryBook.DoesNotExist:
+                # update book favorite count
+                if isFavorited:
+                    selectedBook.favorites_count += 1
+                    selectedBook.save()
+
+                book_to_add.library = reader_library
+                book_to_add.save()
+                bookForm.save_m2m()
+                return JsonResponse({"status": True, "message": "Succesfully added book to library"}, status=200)
+            
+        return JsonResponse({"status": False, "message": f"{selectedBook.title} already exists in library"}, status=409)
+    
+    else:
+        return JsonResponse({"status": False, "message": "Failed to add book to library"}, status=400)
+
+@require_POST
+@csrf_exempt
+def api_remove_book(request):
+    ''' Mengeluarkan buku dari library milik user '''
+    reader_library, book_to_delete = None, None
+    book_id = int(request.POST.get("book_id", -1))
+
+    try:
+        reader_library = Library.objects.get(reader__user=request.user)
+    except Library.DoesNotExist:
+        return JsonResponse({"status": False, "message": "User is not a Reader"}, status=403)
+    
+    try:
+        book_to_delete = LibraryBook.objects.get(book__id=book_id, library=reader_library)
+    except LibraryBook.DoesNotExist:
+        return JsonResponse({"status": False, "message": "Book isn't in Reader's library"}, status=404)
+        
+    book_to_delete.delete()
+    return JsonResponse({"status": True, "message": "Sucessfully deleted book from library"}, status=200)

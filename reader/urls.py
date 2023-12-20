@@ -12,7 +12,17 @@ urlpatterns = [
     path('get-reader/', get_all_readers_json, name='get_all_readers_json'),
     path('edit-profile-ajax/<int:id>/', edit_profile_ajax, name='edit_profile_ajax'),
     path('search/', search_handler, name='search_handler'),
+    path('search-readers/', search_readers_api, name='search_readers_api'),
     path('get-reader-json/', get_reader_json, name='get_reader_json'),
     path('get-readers-json/', get_readers_json, name='get_readers_json'),
+    path('update-profile/', update_profile, name='update_profile'),
     
+    # ======
+    path('reader-library-api/<str:username>/', reader_library_api, name='reader_library_api'),
+    path('reader-review-api/<str:username>/', reader_review_api, name='reader_review_api'),
+    
+    # ====
+    path('show-other-profile/<int:id>/', show_other_profile, name='show_other_profile'),
+    path('reader-detail-api/<int:id>/', reader_detail_api, name='reader_detail_api'),
+
 ]
