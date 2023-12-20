@@ -150,57 +150,63 @@
         <div id="librarySection" class="profile-section mt-4 text-center">
             <h2 class="section-title">Your Library</h2>
             <div class="row justify-content-center">
-            <!--
-                <p>Your library is empty. <a href="#">Add your first book!</a></p>
-            -->
                 {% if reader.preferences.share_library %}
-                    {% for item in library_items %}
-                        <div class="col-md-2 mb-4">
-                            <div class="card">
-                                <img src="{{ item.book.thumbnail }}" class="card-img-top" alt="Thumbnail for {{ item.book.title }}" style="max-height: 200px; max-width: 180px;">
-                                <div class="card-body">
-                                    <h5 class="card-title">{{ item.book.title }}</h5>
-                                    <p class="card-text"><small class="text-muted">{{ item.book.authors }}</small></p>
+                    {% if library_items %}
+                        {% for item in library_items %}
+                            <div class="col-md-2 mb-4">
+                                <div class="card">
+                                    <img src="{{ item.book.thumbnail }}" class="card-img-top" alt="Thumbnail for {{ item.book.title }}" style="max-height: 200px; max-width: 180px;">
+                                    <div class="card-body">
+                                        <h5 class="card-title">{{ item.book.title }}</h5>
+                                        <p class="card-text"><small class="text-muted">{{ item.book.authors }}</small></p>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    {% endfor %}
+                        {% endfor %}
+                    {% else %}
+                        <span class="fst-italic text-secondary-emphasis">It looks like you haven't added any books.</span>
+                    {% endif %}
                 {% endif %}
             </div>
         </div>
     </div>
-
 
     <div class="container">
         <div id="reviewSection" class="profile-section mt-4 text-center">
             <h2 class="section-title">Your Review</h2>
             <div class="row justify-content-center">
                 {% if reader.preferences.share_reviews %}
-                    {% for review in reviews %}
-                        <div class="col-md-4 mb-4">
-                            <div class="card review-card">
-                            <!--
-                                <p><strong>Status:</strong> {{ review.status_on_review }}</p> 
-                            -->
-                                <p>
-                                    <strong>Rating:</strong> 
-                                    <span class="yellow-star">★</span> {{ review.stars_rating }}
-                                </p>
-                                <p>
-                                    <strong>Review:</strong> 
-                                    {{ review.review_text }}
-                                </p>
-                                <p>
-                                    <strong>Date Posted:</strong> 
-                                    {{ review.date_posted|date:"F d, Y" }}
-                                </p>
-                            </div>                            
+                    {% if reviews %}
+                        {% for review in reviews %}
+                            <div class="col-md-4 mb-4">
+                                <div class="card review-card">
+                                    <p>
+                                        <strong>Rating:</strong> 
+                                        <span class="yellow-star">★</span> {{ review.stars_rating }}
+                                    </p>
+                                    <p>
+                                        <strong>Review:</strong> 
+                                        {{ review.review_text }}
+                                    </p>
+                                    <p>
+                                        <strong>Date Posted:</strong> 
+                                        {{ review.date_posted|date:"F d, Y" }}
+                                    </p>
+                                </div>                            
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="col-md-12">
+                            <span class="fst-italic text-secondary-emphasis">You haven't posted any reviews yet.</span>
                         </div>
-                    {% endfor %}
+                    {% endif %}
                 {% endif %}
             </div>
         </div>
     </div>
+    
+    
+    
 
     <!-- Modal Edit Profile -->
     <div class="modal fade" id="edit-profile-modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
