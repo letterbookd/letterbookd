@@ -51,26 +51,13 @@ def logout(request):
         }, status=401)
 
 @csrf_exempt
-def logout(request):
-    username = request.user.username
-
-    try:
-        auth_logout(request)
-        return JsonResponse({
-            "username": username,
-            "status": True,
-            "message": "Logout berhasil!"
-        }, status=200)
-    except:
-        return JsonResponse({
-        "status": False,
-        "message": "Logout gagal."
-        }, status=401)
-
-@csrf_exempt
 def register(request):
     if request.method == 'POST':
-        form = PrettierUserCreationForm(request.POST or None)
+        form = PrettierUserCreationForm({
+            "username" : request.POST.get("username"),
+            "password1" : request.POST.get("password1"),
+            "password2" : request.POST.get("password2"),
+        } or None)
 
         if form.is_valid():
             new_user = form.save()
@@ -85,6 +72,6 @@ def register(request):
             reader.preferences.save()
             reader.save()
 
-        return JsonResponse({"username": form.cleaned_data['username'], "status": True, "message": "Register successful!"}, status=201)
+        return JsonResponse({"username": request.POST.get("username"), "status": True, "message": "Register successful!"}, status=201)
     else:
         return JsonResponse({"status": False, "message": "Invalid request method."}, status=400)
