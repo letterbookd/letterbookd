@@ -79,25 +79,6 @@
     }
 
     /* REVIEW CARD SPECIFIC STYLES */
-    /*
-    .review-card {
-        max-height: 350px;
-        margin-bottom: 20px;
-    }
-
-    .review-card-body {
-        padding: 15px;
-    }
-
-    .review-card p, .review-card h5 {
-        margin: 0.5rem 0;
-    }
-
-    .yellow-star {
-        color: #ffd700;
-        margin-right: 0.5rem;
-    }
-    */
     .review-card {
         display: flex;
         flex-direction: column;
@@ -198,7 +179,9 @@
                     {% for review in reviews %}
                         <div class="col-md-4 mb-4">
                             <div class="card review-card">
-                                <p><strong>Status:</strong> {{ review.status_on_review }}</p>
+                            <!--
+                                <p><strong>Status:</strong> {{ review.status_on_review }}</p> 
+                            -->
                                 <p>
                                     <strong>Rating:</strong> 
                                     <span class="yellow-star">★</span> {{ review.stars_rating }}
