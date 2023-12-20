@@ -16,32 +16,6 @@ from django.db import transaction
 from .serializers import ReaderSerializer
 
 
-
-# Menampilkan halaman profile Reader
-'''
-def show_profile(request, id):
-    reader = get_object_or_404(Reader, user__id=id)
-    return render(request, 'profile.html', {'reader': reader, 'page_title': 'Profile'})
-'''
-
-'''
-@login_required(login_url='/login')
-def show_profile(request, id):
-    # Dapatkan objek reader
-    reader = get_object_or_404(Reader, user__id=id)
-
-    # Dapatkan semua buku di library pengguna
-    library_books = LibraryBook.objects.filter(library__reader=reader)
-
-    context = {
-        'reader': reader,
-        'page_title': "Profile",
-        'library_books': library_books,
-    }
-
-    return render(request, 'profile.html', context)
-'''
-
 @login_required(login_url='/login')
 def show_profile(request, id):
     # Dapatkan objek reader
@@ -283,3 +257,73 @@ def update_profile(request):
         return JsonResponse({"status": "error", "message": "Invalid JSON data"})
     except Exception as e:
         return JsonResponse({"status": "error", "message": str(e)})
+
+# ======================
+
+def reader_library_api(request, username):
+    # Dapatkan objek reader berdasarkan username
+    reader = get_object_or_404(Reader, user__username=username)
+
+    # Dapatkan semua buku di library pengguna
+    library_items = LibraryBook.objects.filter(library__reader=reader)
+
+    # Format data buku menjadi JSON
+    books_json = [{
+        'title': item.book.title,
+        'authors': item.book.authors,
+        'thumbnail': item.book.thumbnail if item.book.thumbnail else None,  
+    } for item in library_items]
+
+    return JsonResponse(books_json, safe=False)
+
+def reader_review_api(request, username):
+    try:
+        # Dapatkan objek reader berdasarkan username
+        reader = get_object_or_404(Reader, user__username=username)
+
+        # Dapatkan semua review untuk reader tertentu
+        reviews = Review.objects.filter(user=reader).select_related('book')
+
+        # Format data review menjadi JSON
+        reviews_json = [{
+            'id': review.id,
+            'book_title': review.book.title,
+            'stars_rating': review.stars_rating,
+            'status_on_review': review.status_on_review,
+            'date_posted': review.date_posted.strftime('%Y-%m-%d %H:%M:%S'),
+            'review_text': review.review_text
+        } for review in reviews]
+
+        return JsonResponse(reviews_json, safe=False)
+    except Reader.DoesNotExist:
+        return JsonResponse({'error': 'Reader not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+# =====
+
+def show_other_profile(request, id):
+    reader = get_object_or_404(Reader, user__id=id)
+
+    library_items = LibraryBook.objects.filter(library__reader=reader)  
+    reviews = Review.objects.filter(user=reader) 
+
+    context = {
+        'reader': reader,
+        'library_items': library_items,
+        'reviews': reviews,
+    }
+
+    return render(request, 'profile_other.html', context)
+
+def reader_detail_api(request, id):
+    reader = get_object_or_404(Reader, user__id=id)
+
+    data = {
+        'id': reader.id,
+        'display_name': reader.display_name,
+        'bio': reader.bio,
+        'share_reviews': reader.preferences.share_reviews,
+        'share_library': reader.preferences.share_library,
+    }
+    return JsonResponse(data)
