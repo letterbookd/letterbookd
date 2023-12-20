@@ -325,3 +325,31 @@ def reader_review_api(request, username):
         return JsonResponse({'error': 'Reader not found'}, status=404)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+
+# =====
+
+def show_other_profile(request, id):
+    reader = get_object_or_404(Reader, user__id=id)
+
+    library_items = LibraryBook.objects.filter(library__reader=reader)  
+    reviews = Review.objects.filter(user=reader) 
+
+    context = {
+        'reader': reader,
+        'library_items': library_items,
+        'reviews': reviews,
+    }
+
+    return render(request, 'profile_other.html', context)
+
+def reader_detail_api(request, id):
+    reader = get_object_or_404(Reader, user__id=id)
+
+    data = {
+        'id': reader.id,
+        'display_name': reader.display_name,
+        'bio': reader.bio,
+        'share_reviews': reader.preferences.share_reviews,
+        'share_library': reader.preferences.share_library,
+    }
+    return JsonResponse(data)

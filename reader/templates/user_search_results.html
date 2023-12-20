@@ -25,9 +25,8 @@
                         <h5 class="card-title">{{ reader.user }}</h5>
                         <p class="card-text">{{ reader.display_name }}</p>
                         <p class="card-text">{{ reader.bio }}</p>
-                        <!--
-                        <a href="{% url 'reader:show_profile' id=reader.user.id %}" class="btn btn-primary mb-4">View Profile</a>
-                        -->
+                        <a href="{% url 'reader:show_other_profile' id=reader.user.id %}" class="btn btn-primary mb-4">View Profile</a>
+                        
                     </div>
                 </div>
             </div>
