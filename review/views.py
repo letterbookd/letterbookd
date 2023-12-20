@@ -145,10 +145,18 @@ def show_review_flutter(request):
     return HttpResponse(serializers.serialize("json", data), content_type="application/json")
 
 def show_review_flutter_by_user(request):
-    reader = Reader.objects.get(user=request.user)
-    data = Review.objects.filter(user=reader)
-    data = data[::-1]
-    return HttpResponse(serializers.serialize("json", data), content_type="application/json")
+    try:
+        username = request.headers['username']    
+        user = get_object_or_404(User, username=username)
+        reader = get_object_or_404(Reader, user__id=user.id)
+        data = Review.objects.filter(user=reader)
+        data = data[::-1]
+        return HttpResponse(serializers.serialize("json", data), content_type="application/json")
+    except Reader.DoesNotExist:
+        return JsonResponse({'error': 'Data not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({"status": "error", "message": str(e)})
+
 
 def show_review_by_book_flutter(request, id_buku):
     book = Book.objects.get(pk=id_buku)
@@ -172,11 +180,15 @@ def create_review_flutter(request):
         try:
             library_book= LibraryBook.objects.get(library=reader_library, book=book)
             status_on_review = library_book.tracking_status
+
         except LibraryBook.DoesNotExist:
             status_on_review = "UNTRACKED"
 
+        username = request.headers['username']    
+        user = get_object_or_404(User, username=username)
+
         new_review = Review.objects.create(
-            user = Reader.objects.get(user = request.user),
+            user = user,
             book = Book.objects.get(pk = data["book_id"]),
             stars_rating = float(data["stars_rating"]),
             status_on_review = status_on_review,

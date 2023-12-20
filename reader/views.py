@@ -15,16 +15,10 @@ from django.db import transaction
 
 from .serializers import ReaderSerializer
 
-
 @login_required(login_url='/login')
 def show_profile(request, id):
-    # Dapatkan objek reader
     reader = get_object_or_404(Reader, user__id=id)
-
-    # Dapatkan semua buku di library pengguna
     library_items = get_object_or_404(Library, reader__user__id=id).mybooks.order_by('-id').all()
-
-    # Dapatkan semua review yang ditulis pengguna
     reviews = Review.objects.filter(user=reader)
 
     form = UserProfileForm()
@@ -38,8 +32,6 @@ def show_profile(request, id):
     }
 
     return render(request, 'profile.html', context)
-
-
 
 # Mengembalikan halaman hasil searching Reader dengan display_name
 def search_reader(request, display_name):
@@ -58,7 +50,6 @@ def edit_profile(request, user_id):
             return JsonResponse({'status': 'error', 'message': 'There was an error updating the profile'})
     return JsonResponse({'status': 'error', 'message': 'Invalid request method'})
 
-
 # Menampilkan data JSON readers 
 def show_json(request):
     all_readers = Reader.objects.all()
@@ -68,14 +59,10 @@ def show_json(request):
 def show_json_by_id(request, id):
     specific_reader = Reader.objects.filter(user__id=id).first()
     if specific_reader is not None:
-        # Fetch the associated ReaderPreferences
         reader_preferences = specific_reader.preferences
-
-        # Extract the 'share_reviews' field from ReaderPreferences
         share_reviews = reader_preferences.share_reviews
         share_library = reader_preferences.share_library
 
-        # Create a dictionary containing the relevant data
         response_data = {
             'id': specific_reader.id,
             'username': specific_reader.user.username,
@@ -87,7 +74,6 @@ def show_json_by_id(request, id):
 
         return JsonResponse(response_data)
     else:
-        # Handle the case when the specific_reader is not found
         return JsonResponse({'error': 'Reader not found'}, status=404)
 
 # Mendapatkan data JSON readers
@@ -109,14 +95,11 @@ def edit_profile_ajax(request, id):
 
         reader.display_name = display_name
         reader.bio = bio
-    
-        # Dapatkan semua buku di library pengguna
         
         reader.preferences.share_reviews = share_reviews
         reader.preferences.share_library = share_library
         reader.preferences.save()
 
-        #
         reader.save()
 
         return HttpResponse("CREATED", status=201)
@@ -136,7 +119,6 @@ def search_handler(request):
         user_books = LibraryBook.objects.filter(library__reader__user=request.user, book__title__icontains=query)
         return render(request, 'library_search_results.html', {'results': user_books, 'query': query})
 
-
     elif search_type == "reader":
         readers = Reader.objects.filter(Q(display_name__icontains=query) | Q(user__username__icontains=query))
         return render(request, 'user_search_results.html', {'readers': readers, 'query': query})
@@ -146,15 +128,8 @@ def search_handler(request):
 
 @login_required(login_url='/login')
 def show_user_library(request):
-    ''' Menampilkan semua buku di library milik user '''
-    
-    # Dapatkan library milik user
     user_library = get_object_or_404(Library, reader__user=request.user) 
-    
-    # Dapatkan semua LibraryBook yang terkait dengan library user tersebut
     user_library_books = user_library.mybooks.all()
-    
-    # Dapatkan semua buku dari setiap LibraryBook
     books_in_library = [lib_book.book for lib_book in user_library_books]
 
     context = {
@@ -163,7 +138,6 @@ def show_user_library(request):
         'display_name': get_object_or_404(Reader, user=request.user).display_name, 
     }
     return render(request, './user_library.html', context)
-
 
 def get_reader_json(request):
     try:
@@ -197,7 +171,6 @@ def get_readers_json(request):
 
     return JsonResponse(combined_data)
 
-
 def search_readers_api(request):
     def format_reader_data(reader):
         return {
@@ -230,7 +203,7 @@ def update_profile(request):
 
     try:
         data = json.loads(request.body)
-        print("Received data:", data)
+        # print("Received data:", data)
 
         with transaction.atomic():
             user = User.objects.get(username=data.get('username'))
@@ -257,8 +230,6 @@ def update_profile(request):
         return JsonResponse({"status": "error", "message": "Invalid JSON data"})
     except Exception as e:
         return JsonResponse({"status": "error", "message": str(e)})
-
-# ======================
 
 def reader_library_api(request, username):
     # Dapatkan objek reader berdasarkan username
@@ -299,8 +270,6 @@ def reader_review_api(request, username):
         return JsonResponse({'error': 'Reader not found'}, status=404)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
-
-# =====
 
 def show_other_profile(request, id):
     reader = get_object_or_404(Reader, user__id=id)
