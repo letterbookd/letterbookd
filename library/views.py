@@ -142,8 +142,10 @@ def api_update_book_status(request):
         library_book = LibraryBook.objects.get(book__id=book_id, library=reader_library)
     except LibraryBook.DoesNotExist:
         return JsonResponse({"status": False, "message": "Book isn't in Reader's library"}, status=404)
-        
+    
+    trackingStatus = int(request.POST.get('trackingStatus', library_book.tracking_status))
     isFavorited = library_book.is_favorited
+
     if (request.POST.get('isFavorited') is not None):
         isFavorited = request.POST.get('isFavorited')
         if isFavorited == u'true':
@@ -151,12 +153,21 @@ def api_update_book_status(request):
         if isFavorited == u'false':
             isFavorited = False
 
-    trackingStatus = int(request.POST.get('trackingStatus', library_book.tracking_status))
+    bookForm = UpdateLibBookForm({
+            'tracking_status': trackingStatus,
+            'is_favorited': isFavorited,
+        }, instance=library_book)
+    
+    if bookForm.is_valid():
+        bookForm.save()
 
-    if library_book:
-        library_book.is_favorited = isFavorited
-        library_book.tracking_status = trackingStatus
-        library_book.save()
+        # update book favorite count
+        if isFavorited & (isFavorited == library_book.is_favorited):
+            library_book.book.favorites_count += 1
+        elif (not isFavorited) & (isFavorited == library_book.is_favorited):
+            library_book.book.favorites_count -= 1
+        library_book.book.save()
+
         return JsonResponse({"status": True, "message": "Updated!"}, status=201)
     
     return JsonResponse({"status": False, "message": "Cannot find book in library"}, status=400)
@@ -185,25 +196,30 @@ def api_add_book(request):
                 isFavorited = False
 
         trackingStatus = int(request.POST.get('trackingStatus', 1))
+        selectedBook = Book.objects.get(id=book_id)
 
         bookForm = LibraryBookForm({
-            'book': Book.objects.get(id=book_id),
+            'book': selectedBook,
             'tracking_status': trackingStatus,
             'is_favorited': isFavorited,
         })
-
-        print("abababab")
-        print(bookForm.is_valid)
 
         if bookForm.is_valid():
             book_to_add = bookForm.save(commit=False)
             try:
                 LibraryBook.objects.get(library=reader_library, book=book_to_add.book)
             except LibraryBook.DoesNotExist:
+                # update book favorite count
+                if isFavorited:
+                    selectedBook.favorites_count += 1
+                    selectedBook.save()
+
                 book_to_add.library = reader_library
                 book_to_add.save()
                 bookForm.save_m2m()
                 return JsonResponse({"status": True, "message": "Succesfully added book to library"}, status=200)
+            
+        return JsonResponse({"status": False, "message": f"{selectedBook.title} already exists in library"}, status=409)
     
     else:
         return JsonResponse({"status": False, "message": "Failed to add book to library"}, status=400)
