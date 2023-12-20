@@ -145,7 +145,7 @@ def show_review_flutter(request):
     return HttpResponse(serializers.serialize("json", data), content_type="application/json")
 
 def show_review_flutter_by_user(request):
-    reader = Reader.objects.get(user=request.user)
+    reader = get_object_or_404(Reader, user=request.user)
     data = Review.objects.filter(user=reader)
     data = data[::-1]
     return HttpResponse(serializers.serialize("json", data), content_type="application/json")
@@ -176,7 +176,7 @@ def create_review_flutter(request):
             status_on_review = "UNTRACKED"
 
         new_review = Review.objects.create(
-            user = Reader.objects.get(user = request.user),
+            user = get_object_or_404(Reader, user=request.user),
             book = Book.objects.get(pk = data["book_id"]),
             stars_rating = float(data["stars_rating"]),
             status_on_review = status_on_review,
